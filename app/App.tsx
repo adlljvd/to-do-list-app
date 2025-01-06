@@ -7,6 +7,11 @@ import { StatusBar } from "expo-status-bar";
 import { useState, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
 import AuthContext from "./src/context/AuthContext";
+import { View, Platform } from "react-native";
+import {
+  setStatusBarBackgroundColor,
+  setStatusBarStyle,
+} from "expo-status-bar";
 
 const Navigation = createStaticNavigation(RootStack);
 
@@ -15,6 +20,10 @@ export default function App() {
 
   useEffect(() => {
     getValueFor();
+    if (Platform.OS === "android") {
+      setStatusBarBackgroundColor("#1A1A1A", true);
+      setStatusBarStyle("light");
+    }
   }, []);
 
   async function getValueFor() {
@@ -28,10 +37,10 @@ export default function App() {
     <Provider store={store}>
       <AuthContext.Provider value={{ isLogin, setIsLogin }}>
         <SafeAreaProvider>
-          <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-            <StatusBar style="auto" />
+          <View style={{ flex: 1, backgroundColor: "#1A1A1A" }}>
+            <StatusBar style="light" backgroundColor="#1A1A1A" />
             <Navigation />
-          </SafeAreaView>
+          </View>
         </SafeAreaProvider>
       </AuthContext.Provider>
     </Provider>
