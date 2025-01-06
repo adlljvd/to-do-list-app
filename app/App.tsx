@@ -1,28 +1,39 @@
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createStaticNavigation } from "@react-navigation/native";
+import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 import { store } from "./src/store";
-import AuthStack from "./src/navigation/AuthStack";
-import MainStack from "./src/navigation/MainStack";
+import RootStack from "./src/navigation/RootStack";
 import { StatusBar } from "expo-status-bar";
+import { useState, useEffect } from "react";
+import * as SecureStore from "expo-secure-store";
+import AuthContext from "./src/context/AuthContext";
 
-export type RootStackParamList = {
-  Auth: undefined;
-  Main: undefined;
-};
-
-const Stack = createNativeStackNavigator<RootStackParamList>();
+const Navigation = createStaticNavigation(RootStack);
 
 export default function App() {
+  const [isLogin, setIsLogin] = useState(false);
+
+  useEffect(() => {
+    getValueFor();
+  }, []);
+
+  async function getValueFor() {
+    let result = await SecureStore.getItemAsync("userToken");
+    if (result) {
+      setIsLogin(true);
+    }
+  }
+
   return (
     <Provider store={store}>
-      <NavigationContainer>
-        <StatusBar style="auto" />
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Auth" component={AuthStack} />
-          <Stack.Screen name="Main" component={MainStack} />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <AuthContext.Provider value={{ isLogin, setIsLogin }}>
+        <SafeAreaProvider>
+          <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+            <StatusBar style="auto" />
+            <Navigation />
+          </SafeAreaView>
+        </SafeAreaProvider>
+      </AuthContext.Provider>
     </Provider>
   );
 }
