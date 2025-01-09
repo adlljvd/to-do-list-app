@@ -10,9 +10,14 @@ import {
   Platform,
   Image,
   Alert,
+  Animated,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import {
+  Swipeable,
+  GestureHandlerRootView,
+} from "react-native-gesture-handler";
 
 interface Task {
   id: number;
@@ -185,6 +190,38 @@ export default function TaskListScreen() {
     </View>
   );
 
+  const renderRightActions = (
+    progress: Animated.AnimatedInterpolation<number>,
+    dragX: Animated.AnimatedInterpolation<number>,
+    taskId: number,
+    taskTitle: string
+  ) => {
+    const scale = dragX.interpolate({
+      inputRange: [-80, 0],
+      outputRange: [1, 0],
+      extrapolate: "clamp",
+    });
+
+    return (
+      <TouchableOpacity
+        style={styles.deleteAction}
+        onPress={() => handleDeleteTask(taskId, taskTitle)}
+      >
+        <Animated.View
+          style={[
+            styles.deleteActionContent,
+            {
+              transform: [{ scale }],
+            },
+          ]}
+        >
+          <Ionicons name="trash-outline" size={24} color="#FFFFFF" />
+          <Text style={styles.deleteActionText}>Delete</Text>
+        </Animated.View>
+      </TouchableOpacity>
+    );
+  };
+
   const renderTasks = () => (
     <ScrollView style={styles.tasksContainer}>
       {tasks.map((task, index) => (
@@ -194,88 +231,91 @@ export default function TaskListScreen() {
               {`${task.date.month} ${task.date.year}`}
             </Text>
           ) : null}
-          <TouchableOpacity style={styles.taskCard}>
-            <View style={styles.taskDateContainer}>
-              <Text style={styles.taskDay}>{task.date.day}</Text>
-              <Text style={styles.taskDayName}>
-                {new Date(
-                  task.date.year,
-                  [
-                    "Jan",
-                    "Feb",
-                    "Mar",
-                    "Apr",
-                    "May",
-                    "Jun",
-                    "Jul",
-                    "Aug",
-                    "Sep",
-                    "Oct",
-                    "Nov",
-                    "Dec",
-                  ].indexOf(task.date.month),
-                  task.date.day
-                ).toLocaleDateString("en-US", { weekday: "short" })}
-              </Text>
-            </View>
-            <View style={styles.taskContent}>
-              <View style={styles.taskHeader}>
-                <View style={styles.titleAndCategory}>
-                  <Text style={styles.taskTitle}>{task.title}</Text>
-                  <View
-                    style={[
-                      styles.categoryBadge,
-                      { backgroundColor: `${task.category.color}15` },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.categoryText,
-                        { color: task.category.color },
-                      ]}
-                    >
-                      {task.category.name}
-                    </Text>
-                  </View>
+          <GestureHandlerRootView>
+            <Swipeable
+              renderRightActions={(progress, dragX) =>
+                renderRightActions(progress, dragX, task.id, task.title)
+              }
+              rightThreshold={40}
+            >
+              <View style={styles.taskCard}>
+                <View style={styles.taskDateContainer}>
+                  <Text style={styles.taskDay}>{task.date.day}</Text>
+                  <Text style={styles.taskDayName}>
+                    {new Date(
+                      task.date.year,
+                      [
+                        "Jan",
+                        "Feb",
+                        "Mar",
+                        "Apr",
+                        "May",
+                        "Jun",
+                        "Jul",
+                        "Aug",
+                        "Sep",
+                        "Oct",
+                        "Nov",
+                        "Dec",
+                      ].indexOf(task.date.month),
+                      task.date.day
+                    ).toLocaleDateString("en-US", { weekday: "short" })}
+                  </Text>
                 </View>
-                <View style={styles.indicators}>
-                  <View
-                    style={[
-                      styles.priorityIndicator,
-                      { backgroundColor: getPriorityColor(task.priority) },
-                    ]}
-                  />
-                  <View
-                    style={[
-                      styles.statusBadge,
-                      { backgroundColor: `${getStatusColor(task.status)}20` },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.statusText,
-                        { color: getStatusColor(task.status) },
-                      ]}
-                    >
-                      {task.status.replace("_", " ").toUpperCase()}
-                    </Text>
+                <View style={styles.taskContent}>
+                  <View style={styles.taskHeader}>
+                    <View style={styles.titleAndCategory}>
+                      <Text style={styles.taskTitle}>{task.title}</Text>
+                      <View
+                        style={[
+                          styles.categoryBadge,
+                          { backgroundColor: `${task.category.color}15` },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.categoryText,
+                            { color: task.category.color },
+                          ]}
+                        >
+                          {task.category.name}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.indicators}>
+                      <View
+                        style={[
+                          styles.priorityIndicator,
+                          { backgroundColor: getPriorityColor(task.priority) },
+                        ]}
+                      />
+                      <View
+                        style={[
+                          styles.statusBadge,
+                          {
+                            backgroundColor: `${getStatusColor(task.status)}20`,
+                          },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.statusText,
+                            { color: getStatusColor(task.status) },
+                          ]}
+                        >
+                          {task.status.replace("_", " ").toUpperCase()}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                  <View style={styles.taskTimeContainer}>
+                    <Ionicons name="time-outline" size={14} color="#666666" />
+                    <Text style={styles.taskTime}>{task.time}</Text>
                   </View>
                 </View>
               </View>
-              <View style={styles.taskFooter}>
-                <View style={styles.taskTimeContainer}>
-                  <Ionicons name="time-outline" size={14} color="#666666" />
-                  <Text style={styles.taskTime}>{task.time}</Text>
-                </View>
-                <TouchableOpacity
-                  style={styles.deleteButton}
-                  onPress={() => handleDeleteTask(task.id, task.title)}
-                >
-                  <Ionicons name="trash-outline" size={16} color="#FF5252" />
-                </TouchableOpacity>
-              </View>
-            </View>
-          </TouchableOpacity>
+            </Swipeable>
+          </GestureHandlerRootView>
         </View>
       ))}
     </ScrollView>
@@ -462,5 +502,23 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     padding: 4,
+  },
+  deleteAction: {
+    backgroundColor: "#FF5252",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 12,
+    width: 100,
+    height: "95%",
+  },
+  deleteActionContent: {
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 4,
+  },
+  deleteActionText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "600",
   },
 });
