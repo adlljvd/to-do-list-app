@@ -22,6 +22,8 @@ interface Task {
     month: string;
     year: number;
   };
+  status: "pending" | "in_progress" | "completed";
+  priority: "low" | "medium" | "high";
 }
 
 export default function TaskListScreen() {
@@ -40,20 +42,48 @@ export default function TaskListScreen() {
       title: "Vistro Project Handover",
       time: "11:30 AM",
       date: { day: 15, month: "May", year: 2020 },
+      status: "in_progress",
+      priority: "high",
     },
     {
       id: 2,
       title: "Team Discussion",
       time: "12:30 PM - 01:30 PM",
       date: { day: 18, month: "May", year: 2020 },
+      status: "pending",
+      priority: "medium",
     },
     {
       id: 3,
       title: "Dribbble Shot Upload",
       time: "03:00 PM - 04:00 PM",
       date: { day: 10, month: "June", year: 2020 },
+      status: "completed",
+      priority: "low",
     },
   ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "#4CAF50";
+      case "in_progress":
+        return "#2196F3";
+      default:
+        return "#FFA000";
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "#FF5252";
+      case "medium":
+        return "#FFA000";
+      default:
+        return "#4CAF50";
+    }
+  };
 
   const renderHeader = () => (
     <View style={styles.headerContainer}>
@@ -130,7 +160,32 @@ export default function TaskListScreen() {
               </Text>
             </View>
             <View style={styles.taskContent}>
-              <Text style={styles.taskTitle}>{task.title}</Text>
+              <View style={styles.taskHeader}>
+                <Text style={styles.taskTitle}>{task.title}</Text>
+                <View style={styles.indicators}>
+                  <View
+                    style={[
+                      styles.priorityIndicator,
+                      { backgroundColor: getPriorityColor(task.priority) },
+                    ]}
+                  />
+                  <View
+                    style={[
+                      styles.statusBadge,
+                      { backgroundColor: `${getStatusColor(task.status)}20` },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.statusText,
+                        { color: getStatusColor(task.status) },
+                      ]}
+                    >
+                      {task.status.replace("_", " ").toUpperCase()}
+                    </Text>
+                  </View>
+                </View>
+              </View>
               <View style={styles.taskTimeContainer}>
                 <Ionicons name="time-outline" size={14} color="#666666" />
                 <Text style={styles.taskTime}>{task.time}</Text>
@@ -248,7 +303,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     color: "#6B4EFF",
-    marginBottom: 2,
+    marginBottom: 1,
+    marginTop: 8,
   },
   taskDayName: {
     fontSize: 12,
@@ -263,17 +319,41 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#1A1A1A",
-    marginBottom: 8,
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
   },
   taskTimeContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 10,
   },
   taskTime: {
     fontSize: 12,
     color: "#666666",
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
+  },
+  taskHeader: {
+    flexDirection: "column",
+    gap: 8,
+    marginBottom: 8,
+  },
+  indicators: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  priorityIndicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: "600",
+    textTransform: "uppercase",
   },
 });
