@@ -15,6 +15,7 @@ interface TaskDetailParams {
   task: {
     id: number;
     title: string;
+    description: string;
     time: string;
     date: {
       day: number;
@@ -111,6 +112,9 @@ export default function TaskDetailScreen() {
               </Text>
             </View>
           </View>
+          <Text style={styles.description}>
+            {task.description || "No description provided"}
+          </Text>
         </View>
 
         <View style={styles.section}>
@@ -226,6 +230,12 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#1A1A1A",
     marginBottom: 12,
+  },
+  description: {
+    fontSize: 16,
+    color: "#666666",
+    marginTop: 16,
+    lineHeight: 24,
   },
   statusBadge: {
     alignSelf: "flex-start",

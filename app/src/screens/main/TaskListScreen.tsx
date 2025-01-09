@@ -22,6 +22,7 @@ import {
 interface Task {
   id: number;
   title: string;
+  description: string;
   time: string;
   date: {
     day: number;
@@ -43,6 +44,8 @@ export default function TaskListScreen() {
     {
       id: 1,
       title: "Vistro Project Handover",
+      description:
+        "Complete the handover documentation and transfer all project assets to the client. Include technical documentation and user guides.",
       time: "11:30 AM",
       date: { day: 15, month: "May", year: 2020 },
       status: "in_progress",
@@ -52,6 +55,8 @@ export default function TaskListScreen() {
     {
       id: 2,
       title: "Team Discussion",
+      description:
+        "Weekly team sync to discuss project progress, blockers, and upcoming milestones. Prepare sprint review presentation.",
       time: "12:30 PM - 01:30 PM",
       date: { day: 18, month: "May", year: 2020 },
       status: "pending",
@@ -61,6 +66,8 @@ export default function TaskListScreen() {
     {
       id: 3,
       title: "Dribbble Shot Upload",
+      description:
+        "Create and upload new design shots showcasing recent UI/UX work. Include process shots and design rationale.",
       time: "03:00 PM - 04:00 PM",
       date: { day: 10, month: "June", year: 2020 },
       status: "completed",
