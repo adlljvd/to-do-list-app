@@ -45,12 +45,12 @@ export default function TaskListScreen() {
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: 1,
-      title: "Vistro Project Handover",
+      title: "Project Review : Crodox",
       description:
-        "Complete the handover documentation and transfer all project assets to the client. Include technical documentation and user guides.",
-      time: "11:30 AM",
-      date: { day: 15, month: "May", year: 2020 },
-      status: "in_progress",
+        "All illustration design should be handover to Smith today for review.",
+      time: "02:30 PM - 03:45 PM",
+      date: { day: 20, month: "May", year: 2020 },
+      status: "pending",
       priority: "high",
       category: { name: "Work", color: "#FF5252" },
       createdAt: "2025-01-08T09:00:00Z",
@@ -58,29 +58,15 @@ export default function TaskListScreen() {
     },
     {
       id: 2,
-      title: "Team Discussion",
-      description:
-        "Weekly team sync to discuss project progress, blockers, and upcoming milestones. Prepare sprint review presentation.",
-      time: "12:30 PM - 01:30 PM",
-      date: { day: 18, month: "May", year: 2020 },
-      status: "pending",
+      title: "Meeting with Mark",
+      description: "Weekly sync up meeting with Mark about project progress.",
+      time: "10:30 AM - 11:00 AM",
+      date: { day: 20, month: "May", year: 2020 },
+      status: "completed",
       priority: "medium",
       category: { name: "Meeting", color: "#2196F3" },
       createdAt: "2025-01-09T14:00:00Z",
       updatedAt: "2025-01-09T14:00:00Z",
-    },
-    {
-      id: 3,
-      title: "Dribbble Shot Upload",
-      description:
-        "Create and upload new design shots showcasing recent UI/UX work. Include process shots and design rationale.",
-      time: "03:00 PM - 04:00 PM",
-      date: { day: 10, month: "June", year: 2020 },
-      status: "completed",
-      priority: "low",
-      category: { name: "Design", color: "#9C27B0" },
-      createdAt: "2025-01-07T11:00:00Z",
-      updatedAt: "2025-01-09T16:45:00Z",
     },
   ]);
 
@@ -104,6 +90,19 @@ export default function TaskListScreen() {
         },
       ],
       { cancelable: true }
+    );
+  };
+
+  const handleToggleTaskStatus = (taskId: number) => {
+    setTasks((currentTasks) =>
+      currentTasks.map((task) =>
+        task.id === taskId
+          ? {
+              ...task,
+              status: task.status === "completed" ? "pending" : "completed",
+            }
+          : task
+      )
     );
   };
 
@@ -345,12 +344,143 @@ export default function TaskListScreen() {
     </ScrollView>
   );
 
+  const renderPlannedView = () => {
+    const currentDate = new Date();
+    const daysToShow = [15, 20, 24, 25];
+
+    return (
+      <View style={styles.plannedContainer}>
+        <View style={styles.calendarHeader}>
+          <View style={styles.monthSelector}>
+            <TouchableOpacity style={styles.monthArrow}>
+              <Ionicons name="chevron-back" size={24} color="#666666" />
+            </TouchableOpacity>
+            <Text style={styles.currentMonth}>May 2020</Text>
+            <TouchableOpacity style={styles.monthArrow}>
+              <Ionicons name="chevron-forward" size={24} color="#666666" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.daysScroll}
+          >
+            {daysToShow.map((day) => {
+              const isToday = day === 20;
+              const date = new Date(2020, 4, day); // May is 4 (0-based)
+              const dayName = date.toLocaleDateString("en-US", {
+                weekday: "short",
+              });
+
+              return (
+                <TouchableOpacity
+                  key={day}
+                  style={[styles.dayCell, isToday && styles.todayCell]}
+                >
+                  <Text style={[styles.dayNumber, isToday && styles.todayText]}>
+                    {day}
+                  </Text>
+                  <Text style={[styles.dayName, isToday && styles.todayText]}>
+                    {dayName}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        <ScrollView style={styles.plannedTasksList}>
+          {/* Pending Tasks */}
+          {tasks
+            .filter((task) => task.status === "pending")
+            .map((task) => (
+              <TouchableOpacity
+                key={task.id}
+                style={styles.plannedTaskItem}
+                onPress={() => navigation.navigate("TaskDetail", { task })}
+              >
+                <View style={styles.taskTimeRow}>
+                  <View style={styles.timeContainer}>
+                    <Ionicons name="time-outline" size={14} color="#666666" />
+                    <Text style={styles.plannedTaskTimeText}>{task.time}</Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.taskStatusButton}
+                    onPress={() => handleToggleTaskStatus(task.id)}
+                  >
+                    <View style={styles.statusDot} />
+                  </TouchableOpacity>
+                </View>
+                <Text style={[styles.taskTitle, { marginBottom: 8 }]}>
+                  {task.title}
+                </Text>
+                <Text style={styles.taskDescription}>{task.description}</Text>
+              </TouchableOpacity>
+            ))}
+
+          {/* Completed Section */}
+          {tasks.some((task) => task.status === "completed") && (
+            <View style={styles.completedSection}>
+              <Text style={styles.sectionTitle}>Completed</Text>
+              {tasks
+                .filter((task) => task.status === "completed")
+                .map((task) => (
+                  <TouchableOpacity
+                    key={task.id}
+                    style={[styles.plannedTaskItem, styles.completedTask]}
+                    onPress={() => navigation.navigate("TaskDetail", { task })}
+                  >
+                    <View style={styles.taskTimeRow}>
+                      <View style={styles.timeContainer}>
+                        <Ionicons
+                          name="time-outline"
+                          size={14}
+                          color="#666666"
+                        />
+                        <Text
+                          style={[
+                            styles.plannedTaskTimeText,
+                            styles.completedText,
+                          ]}
+                        >
+                          {task.time}
+                        </Text>
+                      </View>
+                      <TouchableOpacity
+                        style={styles.taskStatusButton}
+                        onPress={() => handleToggleTaskStatus(task.id)}
+                      >
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={24}
+                          color="#6B4EFF"
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    <Text style={[styles.taskTitle, styles.completedText]}>
+                      {task.title}
+                    </Text>
+                    <Text
+                      style={[styles.taskDescription, styles.completedText]}
+                    >
+                      {task.description}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+            </View>
+          )}
+        </ScrollView>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
       {renderHeader()}
       {renderTabs()}
-      {renderTasks()}
+      {activeTab === "planned" ? renderPlannedView() : renderTasks()}
     </SafeAreaView>
   );
 }
@@ -545,5 +675,206 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 12,
     fontWeight: "600",
+  },
+  filterContainer: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  filterButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: "#F5F5F5",
+  },
+  filterButtonActive: {
+    backgroundColor: "#6B4EFF",
+  },
+  filterButtonText: {
+    color: "#666666",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  filterButtonTextActive: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  daysHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+    paddingHorizontal: 8,
+  },
+  dayText: {
+    fontSize: 12,
+    color: "#666666",
+    width: 32,
+    textAlign: "center",
+  },
+  calendarGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 24,
+  },
+  dateCell: {
+    width: 32,
+    height: 32,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 16,
+  },
+  hasTaskCell: {
+    backgroundColor: "#F0EDFF",
+  },
+  dateCellText: {
+    fontSize: 14,
+    color: "#1A1A1A",
+  },
+  todayCellText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+  },
+  hasTaskCellText: {
+    color: "#6B4EFF",
+    fontWeight: "600",
+  },
+  taskIndicator: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#6B4EFF",
+    position: "absolute",
+    bottom: 4,
+  },
+  plannedTaskMeta: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  plannedContainer: {
+    flex: 1,
+    paddingHorizontal: 24,
+  },
+  calendarHeader: {
+    marginBottom: 24,
+  },
+  monthSelector: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  monthArrow: {
+    padding: 8,
+  },
+  currentMonth: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1A1A1A",
+  },
+  daysScroll: {
+    flexDirection: "row",
+  },
+  dayCell: {
+    width: 48,
+    height: 64,
+    marginRight: 12,
+    borderRadius: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F5F5F5",
+  },
+  todayCell: {
+    backgroundColor: "#6B4EFF",
+  },
+  dayNumber: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#1A1A1A",
+    marginBottom: 4,
+  },
+  dayName: {
+    fontSize: 12,
+    color: "#666666",
+  },
+  todayText: {
+    color: "#FFFFFF",
+  },
+  plannedTasksList: {
+    flex: 1,
+  },
+  plannedTaskContent: {
+    gap: 8,
+  },
+  plannedTaskTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1A1A1A",
+  },
+  plannedTaskTime: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  completedSection: {
+    marginTop: 24,
+  },
+  plannedTaskItem: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  completedTask: {
+    opacity: 0.7,
+  },
+  taskTimeRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  timeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  plannedTaskTimeText: {
+    fontSize: 12,
+    color: "#666666",
+  },
+  taskStatusButton: {
+    padding: 4,
+  },
+  statusDot: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: "#6B4EFF",
+  },
+  taskDescription: {
+    fontSize: 14,
+    color: "#1A1A1A",
+    lineHeight: 20,
+  },
+  completedText: {
+    textDecorationLine: "line-through",
+    color: "#666666",
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#1A1A1A",
+    marginBottom: 16,
+    paddingHorizontal: 24,
   },
 });
