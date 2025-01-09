@@ -45,9 +45,9 @@ export default function TaskListScreen() {
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: 1,
-      title: "Project Review : Crodox",
+      title: "Project Review : To Do List App",
       description:
-        "All illustration design should be handover to Smith today for review.",
+        "All codes backend and frontend for the To Do List App should be reviewed by the team before launch.",
       time: "02:30 PM - 03:45 PM",
       date: { day: 20, month: "May", year: 2020 },
       status: "pending",
@@ -58,10 +58,11 @@ export default function TaskListScreen() {
     },
     {
       id: 2,
-      title: "Meeting with Mark",
-      description: "Weekly sync up meeting with Mark about project progress.",
+      title: "Meeting with Instructor",
+      description:
+        "Weekly sync up meeting with buddys. Discuss about project progress.",
       time: "10:30 AM - 11:00 AM",
-      date: { day: 20, month: "May", year: 2020 },
+      date: { day: 20, month: "June", year: 2020 },
       status: "completed",
       priority: "medium",
       category: { name: "Meeting", color: "#2196F3" },
