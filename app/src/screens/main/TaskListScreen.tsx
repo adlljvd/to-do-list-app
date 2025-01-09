@@ -9,6 +9,7 @@ import {
   StatusBar,
   Platform,
   Image,
+  Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -24,11 +25,67 @@ interface Task {
   };
   status: "pending" | "in_progress" | "completed";
   priority: "low" | "medium" | "high";
+  category: {
+    name: string;
+    color: string;
+  };
 }
 
 export default function TaskListScreen() {
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState<string>("my_day");
+  const [tasks, setTasks] = useState<Task[]>([
+    {
+      id: 1,
+      title: "Vistro Project Handover",
+      time: "11:30 AM",
+      date: { day: 15, month: "May", year: 2020 },
+      status: "in_progress",
+      priority: "high",
+      category: { name: "Work", color: "#FF5252" },
+    },
+    {
+      id: 2,
+      title: "Team Discussion",
+      time: "12:30 PM - 01:30 PM",
+      date: { day: 18, month: "May", year: 2020 },
+      status: "pending",
+      priority: "medium",
+      category: { name: "Meeting", color: "#2196F3" },
+    },
+    {
+      id: 3,
+      title: "Dribbble Shot Upload",
+      time: "03:00 PM - 04:00 PM",
+      date: { day: 10, month: "June", year: 2020 },
+      status: "completed",
+      priority: "low",
+      category: { name: "Design", color: "#9C27B0" },
+    },
+  ]);
+
+  const handleDeleteTask = (taskId: number, taskTitle: string) => {
+    Alert.alert(
+      "Delete Task",
+      `Are you sure you want to delete "${taskTitle}"?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          onPress: () => {
+            setTasks((currentTasks) =>
+              currentTasks.filter((task) => task.id !== taskId)
+            );
+          },
+          style: "destructive",
+        },
+      ],
+      { cancelable: true }
+    );
+  };
 
   const tabs = [
     { id: "my_day", name: "My Day" },
@@ -44,6 +101,7 @@ export default function TaskListScreen() {
       date: { day: 15, month: "May", year: 2020 },
       status: "in_progress",
       priority: "high",
+      category: { name: "Work", color: "#FF5252" },
     },
     {
       id: 2,
@@ -52,6 +110,7 @@ export default function TaskListScreen() {
       date: { day: 18, month: "May", year: 2020 },
       status: "pending",
       priority: "medium",
+      category: { name: "Meeting", color: "#2196F3" },
     },
     {
       id: 3,
@@ -60,6 +119,7 @@ export default function TaskListScreen() {
       date: { day: 10, month: "June", year: 2020 },
       status: "completed",
       priority: "low",
+      category: { name: "Design", color: "#9C27B0" },
     },
   ];
 
@@ -127,10 +187,9 @@ export default function TaskListScreen() {
 
   const renderTasks = () => (
     <ScrollView style={styles.tasksContainer}>
-      {mockTasks.map((task, index) => (
+      {tasks.map((task, index) => (
         <View key={task.id} style={styles.monthSection}>
-          {index === 0 ||
-          mockTasks[index - 1].date.month !== task.date.month ? (
+          {index === 0 || tasks[index - 1].date.month !== task.date.month ? (
             <Text style={styles.monthTitle}>
               {`${task.date.month} ${task.date.year}`}
             </Text>
@@ -161,7 +220,24 @@ export default function TaskListScreen() {
             </View>
             <View style={styles.taskContent}>
               <View style={styles.taskHeader}>
-                <Text style={styles.taskTitle}>{task.title}</Text>
+                <View style={styles.titleAndCategory}>
+                  <Text style={styles.taskTitle}>{task.title}</Text>
+                  <View
+                    style={[
+                      styles.categoryBadge,
+                      { backgroundColor: `${task.category.color}15` },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.categoryText,
+                        { color: task.category.color },
+                      ]}
+                    >
+                      {task.category.name}
+                    </Text>
+                  </View>
+                </View>
                 <View style={styles.indicators}>
                   <View
                     style={[
@@ -186,9 +262,17 @@ export default function TaskListScreen() {
                   </View>
                 </View>
               </View>
-              <View style={styles.taskTimeContainer}>
-                <Ionicons name="time-outline" size={14} color="#666666" />
-                <Text style={styles.taskTime}>{task.time}</Text>
+              <View style={styles.taskFooter}>
+                <View style={styles.taskTimeContainer}>
+                  <Ionicons name="time-outline" size={14} color="#666666" />
+                  <Text style={styles.taskTime}>{task.time}</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => handleDeleteTask(task.id, task.title)}
+                >
+                  <Ionicons name="trash-outline" size={16} color="#FF5252" />
+                </TouchableOpacity>
               </View>
             </View>
           </TouchableOpacity>
@@ -355,5 +439,28 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "600",
     textTransform: "uppercase",
+  },
+  titleAndCategory: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 4,
+  },
+  categoryBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  categoryText: {
+    fontSize: 10,
+    fontWeight: "600",
+  },
+  taskFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  deleteButton: {
+    padding: 4,
   },
 });
