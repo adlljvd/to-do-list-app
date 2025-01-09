@@ -28,6 +28,8 @@ interface TaskDetailParams {
       name: string;
       color: string;
     };
+    createdAt: string;
+    updatedAt: string;
   };
 }
 
@@ -138,16 +140,58 @@ export default function TaskDetailScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Date & Time</Text>
-          <View style={styles.dateTimeContainer}>
-            <View style={styles.dateContainer}>
-              <Ionicons name="calendar-outline" size={20} color="#666666" />
-              <Text style={styles.dateText}>
-                {`${task.date.day} ${task.date.month} ${task.date.year}`}
-              </Text>
+          <View style={[styles.historyContainer, styles.dateTimeWrapper]}>
+            <View style={styles.dateTimeContainer}>
+              <View style={styles.dateContainer}>
+                <View style={styles.historyIconContainer}>
+                  <Ionicons name="calendar-outline" size={20} color="#666666" />
+                </View>
+                <View>
+                  <Text style={styles.historyLabel}>Date</Text>
+                  <Text style={styles.dateText}>
+                    {`${task.date.day} ${task.date.month} ${task.date.year}`}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.historyDivider} />
+              <View style={styles.timeContainer}>
+                <View style={styles.historyIconContainer}>
+                  <Ionicons name="time-outline" size={20} color="#666666" />
+                </View>
+                <View>
+                  <Text style={styles.historyLabel}>Time</Text>
+                  <Text style={styles.timeText}>{task.time}</Text>
+                </View>
+              </View>
             </View>
-            <View style={styles.timeContainer}>
-              <Ionicons name="time-outline" size={20} color="#666666" />
-              <Text style={styles.timeText}>{task.time}</Text>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Task History</Text>
+          <View style={styles.historyContainer}>
+            <View style={styles.historyItem}>
+              <View style={styles.historyIconContainer}>
+                <Ionicons name="add-circle-outline" size={20} color="#4CAF50" />
+              </View>
+              <View>
+                <Text style={styles.historyLabel}>Created</Text>
+                <Text style={styles.historyDate}>
+                  {new Date(task.createdAt).toLocaleString()}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.historyDivider} />
+            <View style={styles.historyItem}>
+              <View style={styles.historyIconContainer}>
+                <Ionicons name="pencil-outline" size={20} color="#2196F3" />
+              </View>
+              <View>
+                <Text style={styles.historyLabel}>Last Updated</Text>
+                <Text style={styles.historyDate}>
+                  {new Date(task.updatedAt).toLocaleString()}
+                </Text>
+              </View>
             </View>
           </View>
         </View>
@@ -247,18 +291,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
   },
+  dateTimeWrapper: {
+    padding: 16,
+  },
   dateTimeContainer: {
     gap: 12,
   },
   dateContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 12,
   },
   timeContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 12,
   },
   dateText: {
     fontSize: 14,
@@ -267,5 +314,38 @@ const styles = StyleSheet.create({
   timeText: {
     fontSize: 14,
     color: "#1A1A1A",
+  },
+  historyContainer: {
+    backgroundColor: "#F8F8F8",
+    borderRadius: 12,
+    padding: 16,
+  },
+  historyItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  historyIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  historyLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#1A1A1A",
+  },
+  historyDate: {
+    fontSize: 12,
+    color: "#666666",
+    marginTop: 2,
+  },
+  historyDivider: {
+    height: 1,
+    backgroundColor: "#E0E0E0",
+    marginVertical: 12,
   },
 });

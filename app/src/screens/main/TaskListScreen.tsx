@@ -35,6 +35,8 @@ interface Task {
     name: string;
     color: string;
   };
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function TaskListScreen() {
@@ -51,6 +53,8 @@ export default function TaskListScreen() {
       status: "in_progress",
       priority: "high",
       category: { name: "Work", color: "#FF5252" },
+      createdAt: "2025-01-08T09:00:00Z",
+      updatedAt: "2025-01-10T01:30:00Z",
     },
     {
       id: 2,
@@ -62,6 +66,8 @@ export default function TaskListScreen() {
       status: "pending",
       priority: "medium",
       category: { name: "Meeting", color: "#2196F3" },
+      createdAt: "2025-01-09T14:00:00Z",
+      updatedAt: "2025-01-09T14:00:00Z",
     },
     {
       id: 3,
@@ -73,6 +79,8 @@ export default function TaskListScreen() {
       status: "completed",
       priority: "low",
       category: { name: "Design", color: "#9C27B0" },
+      createdAt: "2025-01-07T11:00:00Z",
+      updatedAt: "2025-01-09T16:45:00Z",
     },
   ]);
 
