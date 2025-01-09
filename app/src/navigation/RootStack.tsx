@@ -5,6 +5,7 @@ import MainTabs from "./MainTabs";
 import CreateTaskScreen from "../screens/main/CreateTaskScreen";
 import EditTaskScreen from "../screens/main/EditTaskScreen";
 import WelcomeScreen from "../screens/auth/WelcomeScreen";
+import TaskDetailScreen from "../screens/main/TaskDetailScreen";
 import useIsSignedOut from "../hooks/useIsSignedOut";
 import useIsSignedIn from "../hooks/useIsSignedIn";
 
@@ -45,6 +46,14 @@ const RootStack = createNativeStackNavigator({
       screen: MainTabs,
       options: {
         headerShown: false,
+      },
+    },
+    TaskDetail: {
+      if: useIsSignedIn,
+      screen: TaskDetailScreen,
+      options: {
+        headerShown: false,
+        animation: "slide_from_right",
       },
     },
     CreateTask: {

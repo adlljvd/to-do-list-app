@@ -239,80 +239,89 @@ export default function TaskListScreen() {
               rightThreshold={40}
             >
               <View style={styles.taskCard}>
-                <View style={styles.taskDateContainer}>
-                  <Text style={styles.taskDay}>{task.date.day}</Text>
-                  <Text style={styles.taskDayName}>
-                    {new Date(
-                      task.date.year,
-                      [
-                        "Jan",
-                        "Feb",
-                        "Mar",
-                        "Apr",
-                        "May",
-                        "Jun",
-                        "Jul",
-                        "Aug",
-                        "Sep",
-                        "Oct",
-                        "Nov",
-                        "Dec",
-                      ].indexOf(task.date.month),
-                      task.date.day
-                    ).toLocaleDateString("en-US", { weekday: "short" })}
-                  </Text>
-                </View>
-                <View style={styles.taskContent}>
-                  <View style={styles.taskHeader}>
-                    <View style={styles.titleAndCategory}>
-                      <Text style={styles.taskTitle}>{task.title}</Text>
-                      <View
-                        style={[
-                          styles.categoryBadge,
-                          { backgroundColor: `${task.category.color}15` },
-                        ]}
-                      >
-                        <Text
+                <TouchableOpacity
+                  style={styles.taskCardContent}
+                  onPress={() => navigation.navigate("TaskDetail", { task })}
+                >
+                  <View style={styles.taskDateContainer}>
+                    <Text style={styles.taskDay}>{task.date.day}</Text>
+                    <Text style={styles.taskDayName}>
+                      {new Date(
+                        task.date.year,
+                        [
+                          "Jan",
+                          "Feb",
+                          "Mar",
+                          "Apr",
+                          "May",
+                          "Jun",
+                          "Jul",
+                          "Aug",
+                          "Sep",
+                          "Oct",
+                          "Nov",
+                          "Dec",
+                        ].indexOf(task.date.month),
+                        task.date.day
+                      ).toLocaleDateString("en-US", { weekday: "short" })}
+                    </Text>
+                  </View>
+                  <View style={styles.taskContent}>
+                    <View style={styles.taskHeader}>
+                      <View style={styles.titleAndCategory}>
+                        <Text style={styles.taskTitle}>{task.title}</Text>
+                        <View
                           style={[
-                            styles.categoryText,
-                            { color: task.category.color },
+                            styles.categoryBadge,
+                            { backgroundColor: `${task.category.color}15` },
                           ]}
                         >
-                          {task.category.name}
-                        </Text>
+                          <Text
+                            style={[
+                              styles.categoryText,
+                              { color: task.category.color },
+                            ]}
+                          >
+                            {task.category.name}
+                          </Text>
+                        </View>
                       </View>
-                    </View>
-                    <View style={styles.indicators}>
-                      <View
-                        style={[
-                          styles.priorityIndicator,
-                          { backgroundColor: getPriorityColor(task.priority) },
-                        ]}
-                      />
-                      <View
-                        style={[
-                          styles.statusBadge,
-                          {
-                            backgroundColor: `${getStatusColor(task.status)}20`,
-                          },
-                        ]}
-                      >
-                        <Text
+                      <View style={styles.indicators}>
+                        <View
                           style={[
-                            styles.statusText,
-                            { color: getStatusColor(task.status) },
+                            styles.priorityIndicator,
+                            {
+                              backgroundColor: getPriorityColor(task.priority),
+                            },
+                          ]}
+                        />
+                        <View
+                          style={[
+                            styles.statusBadge,
+                            {
+                              backgroundColor: `${getStatusColor(
+                                task.status
+                              )}20`,
+                            },
                           ]}
                         >
-                          {task.status.replace("_", " ").toUpperCase()}
-                        </Text>
+                          <Text
+                            style={[
+                              styles.statusText,
+                              { color: getStatusColor(task.status) },
+                            ]}
+                          >
+                            {task.status.replace("_", " ").toUpperCase()}
+                          </Text>
+                        </View>
                       </View>
                     </View>
+                    <View style={styles.taskTimeContainer}>
+                      <Ionicons name="time-outline" size={14} color="#666666" />
+                      <Text style={styles.taskTime}>{task.time}</Text>
+                    </View>
                   </View>
-                  <View style={styles.taskTimeContainer}>
-                    <Ionicons name="time-outline" size={14} color="#666666" />
-                    <Text style={styles.taskTime}>{task.time}</Text>
-                  </View>
-                </View>
+                </TouchableOpacity>
               </View>
             </Swipeable>
           </GestureHandlerRootView>
@@ -416,6 +425,10 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 5,
   },
+  taskCardContent: {
+    flex: 1,
+    flexDirection: "row",
+  },
   taskDateContainer: {
     backgroundColor: "#F0EDFF",
     borderRadius: 12,
@@ -499,9 +512,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-  },
-  deleteButton: {
-    padding: 4,
   },
   deleteAction: {
     backgroundColor: "#FF5252",
