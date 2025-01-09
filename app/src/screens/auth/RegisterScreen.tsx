@@ -23,7 +23,7 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: "",
+    fullname: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -51,7 +51,7 @@ export default function RegisterScreen() {
       console.log("Form Data:", formData);
 
       const response = await axios.post(`${API_URL}/register`, {
-        fullname: formData.fullName,
+        fullname: formData.fullname,
         email: formData.email,
         password: formData.password,
         role: formData.role,

@@ -1,7 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import LoginScreen from "../screens/auth/LoginScreen";
 import RegisterScreen from "../screens/auth/RegisterScreen";
-import TaskListScreen from "../screens/main/TaskListScreen";
+import MainTabs from "./MainTabs";
 import CreateTaskScreen from "../screens/main/CreateTaskScreen";
 import EditTaskScreen from "../screens/main/EditTaskScreen";
 import WelcomeScreen from "../screens/auth/WelcomeScreen";
@@ -40,11 +40,11 @@ const RootStack = createNativeStackNavigator({
       },
     },
     // Main App
-    TaskList: {
+    MainTabs: {
       if: useIsSignedIn,
-      screen: TaskListScreen,
+      screen: MainTabs,
       options: {
-        title: "My Tasks",
+        headerShown: false,
       },
     },
     CreateTask: {

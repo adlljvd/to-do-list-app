@@ -17,6 +17,7 @@ import { useNavigation } from "@react-navigation/native";
 import AuthContext from "../../context/AuthContext";
 import * as SecureStore from "expo-secure-store";
 import axios from "axios";
+import { API_URL } from "../../config/api";
 
 export default function LoginScreen() {
   const navigation = useNavigation();
@@ -28,15 +29,13 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const response = await axios.post(
-        "https://to-do-list.adellajava.tech/login",
-        {
-          email,
-          password,
-        }
-      );
+      const response = await axios.post(`${API_URL}/login`, {
+        email,
+        password,
+      });
 
       await SecureStore.setItemAsync("token", response.data.access_token);
+      console.log(response.data, "<<<ini response data");
       setIsLogin(true);
     } catch (error: any) {
       if (axios.isAxiosError(error)) {
