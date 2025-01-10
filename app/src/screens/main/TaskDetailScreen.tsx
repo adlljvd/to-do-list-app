@@ -70,7 +70,22 @@ export default function TaskDetailScreen() {
           <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Task Detail</Text>
-        <TouchableOpacity style={styles.editButton}>
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() =>
+            navigation.navigate("EditTask", {
+              taskId: task.id,
+              title: task.title,
+              description: task.description,
+              status: task.status,
+              priority: task.priority,
+              category: task.category.name,
+              date: new Date(
+                `${task.date.year}-${task.date.month}-${task.date.day}`
+              ),
+            })
+          }
+        >
           <Ionicons name="create-outline" size={24} color="#6B4EFF" />
         </TouchableOpacity>
       </View>

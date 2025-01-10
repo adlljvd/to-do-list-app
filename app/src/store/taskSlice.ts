@@ -1,11 +1,23 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface Task {
+export type TaskStatus = "pending" | "in_progress" | "completed";
+export type TaskPriority = "low" | "medium" | "high";
+
+export interface Category {
+  name: string;
+  color: string;
+}
+
+export interface Task {
   id: string;
   title: string;
   description: string;
-  completed: boolean;
+  date: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  category: Category;
   createdAt: string;
+  updatedAt: string;
 }
 
 interface TasksState {
@@ -58,4 +70,5 @@ export const {
   setLoading,
   setError,
 } = taskSlice.actions;
+
 export default taskSlice.reducer;
