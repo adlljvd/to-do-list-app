@@ -7,15 +7,13 @@ import {
   SafeAreaView,
   Animated,
   Easing,
-  Dimensions,
   Platform,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-
-const { width } = Dimensions.get("window");
+import { WelcomeScreenNavigationProp } from "../../types/navigation";
 
 export default function WelcomeScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<WelcomeScreenNavigationProp>();
   const logoRotateLeft = new Animated.Value(0);
   const logoRotateRight = new Animated.Value(0);
   const logoScale = new Animated.Value(0.8);

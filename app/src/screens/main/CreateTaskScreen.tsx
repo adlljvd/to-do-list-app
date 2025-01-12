@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -13,11 +13,24 @@ import { TaskFormData } from "../../components/TaskForm/types";
 
 export default function CreateTaskScreen() {
   const navigation = useNavigation();
+  const [formData, setFormData] = useState<TaskFormData>({
+    title: "",
+    description: "",
+    dueDate: null,
+    time: null,
+    status: "pending",
+    priority: "low",
+    category: "",
+  });
 
-  const handleCreateTask = (formData: TaskFormData) => {
+  const handleCreateTask = (data: TaskFormData) => {
     // TODO: Implement task creation logic
-    console.log("Creating task:", formData);
+    console.log("Creating task:", data);
     navigation.goBack();
+  };
+
+  const handleFormChange = (data: TaskFormData) => {
+    setFormData(data);
   };
 
   return (
@@ -31,13 +44,30 @@ export default function CreateTaskScreen() {
             <Ionicons name="close" size={24} color="#1A1A1A" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Create Task</Text>
-          <View style={styles.placeholder} />
+          <TouchableOpacity
+            onPress={() => handleCreateTask(formData)}
+            style={[
+              styles.createButton,
+              !formData.title && styles.createButtonDisabled,
+            ]}
+            disabled={!formData.title}
+          >
+            <Text
+              style={[
+                styles.createButtonText,
+                !formData.title && styles.createButtonTextDisabled,
+              ]}
+            >
+              Create
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <TaskForm
           mode="create"
           onSubmit={handleCreateTask}
           onCancel={() => navigation.goBack()}
+          onChange={handleFormChange}
         />
       </View>
     </SafeAreaView>
@@ -65,8 +95,24 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     color: "#1A1A1A",
+    flex: 1,
+    textAlign: "center",
   },
-  placeholder: {
-    width: 40,
+  createButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: "#6B4EFF",
+  },
+  createButtonDisabled: {
+    backgroundColor: "#E0E0E0",
+  },
+  createButtonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  createButtonTextDisabled: {
+    color: "#999999",
   },
 });

@@ -18,9 +18,10 @@ import AuthContext from "../../context/AuthContext";
 import * as SecureStore from "expo-secure-store";
 import axios from "axios";
 import { API_URL } from "../../config/api";
+import { LoginScreenNavigationProp } from "../../types/navigation";
 
 export default function LoginScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<LoginScreenNavigationProp>();
   const { setIsLogin } = useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,7 +36,6 @@ export default function LoginScreen() {
       });
 
       await SecureStore.setItemAsync("token", response.data.access_token);
-      console.log(response.data, "<<<ini response data");
       setIsLogin(true);
     } catch (error: any) {
       if (axios.isAxiosError(error)) {

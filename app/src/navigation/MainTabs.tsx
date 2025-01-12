@@ -5,13 +5,15 @@ import TaskListScreen from "../screens/main/TaskListScreen";
 import ProfileScreen from "../screens/main/ProfileScreen";
 import CreateTaskScreen from "../screens/main/CreateTaskScreen";
 import { Platform, TouchableOpacity, View, StyleSheet } from "react-native";
+import { MainTabParamList } from "../types/navigation";
+import { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<MainTabParamList>();
 
-function CustomTabBarButton({ children, onPress }) {
+function CustomTabBarButton(props: BottomTabBarButtonProps) {
   return (
-    <TouchableOpacity style={styles.customTabButton} onPress={onPress}>
-      <View style={styles.customTabButtonInner}>{children}</View>
+    <TouchableOpacity style={styles.customTabButton} onPress={props.onPress}>
+      <View style={styles.customTabButtonInner}>{props.children}</View>
     </TouchableOpacity>
   );
 }

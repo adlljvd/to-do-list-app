@@ -17,13 +17,14 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import { API_URL } from "../../config/api";
+import { RegisterScreenNavigationProp } from "../../types/navigation";
 
 export default function RegisterScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<RegisterScreenNavigationProp>();
   const [loading, setLoading] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [formData, setFormData] = useState({
-    fullname: "",
+    name: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -51,7 +52,7 @@ export default function RegisterScreen() {
       console.log("Form Data:", formData);
 
       const response = await axios.post(`${API_URL}/register`, {
-        fullname: formData.fullname,
+        name: formData.name,
         email: formData.email,
         password: formData.password,
         role: formData.role,
@@ -63,11 +64,11 @@ export default function RegisterScreen() {
         Alert.alert("Success", "Please login to continue.", [
           {
             text: "OK",
-            onPress: () => navigation.replace("Login"), // Gunakan replace
+            onPress: () => navigation.navigate("Login"),
           },
         ]);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error details:", error);
 
       if (axios.isAxiosError(error)) {
@@ -106,9 +107,9 @@ export default function RegisterScreen() {
                   style={styles.input}
                   placeholder="Enter your full name"
                   placeholderTextColor="#999999"
-                  value={formData.fullName}
+                  value={formData.name}
                   onChangeText={(text) =>
-                    setFormData({ ...formData, fullName: text })
+                    setFormData({ ...formData, name: text })
                   }
                 />
               </View>

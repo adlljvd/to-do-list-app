@@ -57,8 +57,8 @@ const mockTasks: Task[] = [
 
 const tabs = [
   { id: "my_day", name: "My Day" },
-  { id: "important", name: "Important" },
   { id: "planned", name: "Planned" },
+  { id: "completed", name: "Completed" },
 ];
 
 export default function TaskListScreen() {
