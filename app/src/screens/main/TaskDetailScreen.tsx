@@ -10,31 +10,15 @@ import {
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import { Task } from "../../types/task";
+import { TaskDetailScreenNavigationProp } from "../../types/navigation";
 
 interface TaskDetailParams {
-  task: {
-    id: number;
-    title: string;
-    description: string;
-    time: string;
-    date: {
-      day: number;
-      month: string;
-      year: number;
-    };
-    status: "pending" | "in_progress" | "completed";
-    priority: "low" | "medium" | "high";
-    category: {
-      name: string;
-      color: string;
-    };
-    createdAt: string;
-    updatedAt: string;
-  };
+  task: Task;
 }
 
 export default function TaskDetailScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<TaskDetailScreenNavigationProp>();
   const route = useRoute();
   const { task } = route.params as TaskDetailParams;
 

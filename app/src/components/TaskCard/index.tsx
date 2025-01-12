@@ -4,30 +4,16 @@ import { Swipeable } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import styles from "./styles";
+import { Task } from "../../types/task";
+import { TaskListScreenNavigationProp } from "../../types/navigation";
 
 interface TaskCardProps {
-  task: {
-    id: number;
-    title: string;
-    description: string;
-    time: string;
-    date: {
-      day: number;
-      month: string;
-      year: number;
-    };
-    status: "pending" | "in_progress" | "completed";
-    priority: "low" | "medium" | "high";
-    category: {
-      name: string;
-      color: string;
-    };
-  };
-  onDelete: (taskId: number, taskTitle: string) => void;
+  task: Task;
+  onDelete: (taskId: string, taskTitle: string) => void;
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, onDelete }) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<TaskListScreenNavigationProp>();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -99,18 +85,18 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDelete }) => {
               {new Date(
                 task.date.year,
                 [
-                  "Jan",
-                  "Feb",
-                  "Mar",
-                  "Apr",
+                  "January",
+                  "February",
+                  "March",
+                  "April",
                   "May",
-                  "Jun",
-                  "Jul",
-                  "Aug",
-                  "Sep",
-                  "Oct",
-                  "Nov",
-                  "Dec",
+                  "June",
+                  "July",
+                  "August",
+                  "September",
+                  "October",
+                  "November",
+                  "December",
                 ].indexOf(task.date.month),
                 task.date.day
               ).toLocaleDateString("en-US", { weekday: "short" })}

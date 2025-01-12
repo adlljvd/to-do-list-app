@@ -1,59 +1,32 @@
-import React, { useState } from "react";
-import { StyleSheet, SafeAreaView, StatusBar, Alert } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  StyleSheet,
+  SafeAreaView,
+  StatusBar,
+  Alert,
+  View,
+  Text,
+  Platform,
+  ActivityIndicator,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchTasksAsync,
+  toggleTaskStatus,
+} from "../../store/slices/taskSlice";
+import { AppDispatch, RootState } from "../../store";
+import { API_URL } from "../../config/api";
+import { Ionicons } from "@expo/vector-icons";
+import { Profile } from "../../types/profile";
+import axios from "axios";
+import * as SecureStore from "expo-secure-store";
 import UserHeader from "../../components/UserHeader";
 import TabNavigation from "../../components/TabNavigation";
 import PlannedView from "../../components/PlannedView";
 import TaskList from "../../components/TaskList";
-
-interface Task {
-  id: number;
-  title: string;
-  description: string;
-  time: string;
-  date: {
-    day: number;
-    month: string;
-    year: number;
-  };
-  status: "pending" | "in_progress" | "completed";
-  priority: "low" | "medium" | "high";
-  category: {
-    name: string;
-    color: string;
-  };
-  createdAt: string;
-  updatedAt: string;
-}
-
-const mockTasks: Task[] = [
-  {
-    id: 1,
-    title: "Project Review : To Do List App",
-    description:
-      "All codes backend and frontend for the To Do List App should be reviewed by the team before launch.",
-    time: "02:30 PM - 03:45 PM",
-    date: { day: 20, month: "May", year: 2020 },
-    status: "pending",
-    priority: "high",
-    category: { name: "Work", color: "#FF5252" },
-    createdAt: "2025-01-08T09:00:00Z",
-    updatedAt: "2025-01-10T01:30:00Z",
-  },
-  {
-    id: 2,
-    title: "Meeting with Instructor",
-    description:
-      "Weekly sync up meeting with buddys. Discuss about project progress.",
-    time: "10:30 AM - 11:00 AM",
-    date: { day: 20, month: "June", year: 2020 },
-    status: "completed",
-    priority: "medium",
-    category: { name: "Meeting", color: "#2196F3" },
-    createdAt: "2025-01-09T14:00:00Z",
-    updatedAt: "2025-01-09T14:00:00Z",
-  },
-];
+import { TaskListScreenNavigationProp } from "../../types/navigation";
+import { fetchProfileAsync } from "../../store/slices/userSlice";
 
 const tabs = [
   { id: "my_day", name: "My Day" },
@@ -61,12 +34,36 @@ const tabs = [
   { id: "completed", name: "Completed" },
 ];
 
-export default function TaskListScreen() {
-  const navigation = useNavigation();
-  const [activeTab, setActiveTab] = useState<string>("my_day");
-  const [tasks, setTasks] = useState<Task[]>(mockTasks);
+const EmptyState = () => (
+  <View style={styles.emptyContainer}>
+    <Ionicons name="document-text-outline" size={64} color="#CCCCCC" />
+    <Text style={styles.emptyText}>Click button + to create a new task</Text>
+  </View>
+);
 
-  const handleDeleteTask = (taskId: number, taskTitle: string) => {
+export default function TaskListScreen() {
+  const navigation = useNavigation<TaskListScreenNavigationProp>();
+  const dispatch = useDispatch<AppDispatch>();
+  const [activeTab, setActiveTab] = useState<string>("my_day");
+  const { tasks, loading: tasksLoading } = useSelector(
+    (state: RootState) => state.tasks
+  );
+  const [myProfile, setMyProfile] = useState<Profile>({
+    userId: "",
+    name: "",
+    email: "",
+    role: "",
+  });
+  const { profile, loading: profileLoading } = useSelector(
+    (state: RootState) => state.user
+  );
+
+  useEffect(() => {
+    dispatch(fetchTasksAsync());
+    dispatch(fetchProfileAsync());
+  }, []);
+
+  const handleDeleteTask = (taskId: string, taskTitle: string) => {
     Alert.alert(
       "Delete Task",
       `Are you sure you want to delete "${taskTitle}"?`,
@@ -77,10 +74,31 @@ export default function TaskListScreen() {
         },
         {
           text: "Delete",
-          onPress: () => {
-            setTasks((currentTasks) =>
-              currentTasks.filter((task) => task.id !== taskId)
-            );
+          onPress: async () => {
+            try {
+              const response = await axios.delete(
+                `${API_URL}/tasks/${taskId}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${await SecureStore.getItemAsync(
+                      "token"
+                    )}`,
+                  },
+                }
+              );
+              dispatch(fetchTasksAsync());
+              if (response.status === 200) {
+                Alert.alert("Deleted", response.data.message);
+              }
+            } catch (error) {
+              if (axios.isAxiosError(error)) {
+                const message =
+                  error.response?.data?.message || "Delete task failed";
+                Alert.alert("Error", message);
+              } else {
+                Alert.alert("Error", "Delete task failed. Please try again.");
+              }
+            }
           },
           style: "destructive",
         },
@@ -89,36 +107,85 @@ export default function TaskListScreen() {
     );
   };
 
-  const handleToggleTaskStatus = (taskId: number) => {
-    setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              status: task.status === "completed" ? "pending" : "completed",
-            }
-          : task
-      )
-    );
+  const handleToggleTaskStatus = async (taskId: string) => {
+    try {
+      const currentTask = tasks.find((task) => task.id === taskId);
+      if (!currentTask) return;
+
+      // Optimistic update
+      dispatch(toggleTaskStatus({ taskId }));
+
+      // API call
+      await axios.put(
+        `${API_URL}/tasks/${taskId}`,
+        {
+          status:
+            currentTask.status === "completed"
+              ? currentTask.status
+              : "completed",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${await SecureStore.getItemAsync("token")}`,
+          },
+        }
+      );
+    } catch (error) {
+      dispatch(fetchTasksAsync());
+      if (axios.isAxiosError(error)) {
+        const message =
+          error.response?.data?.message || "Toggle task status failed";
+        Alert.alert("Error", message);
+      } else {
+        Alert.alert("Error", "Toggle task status failed. Please try again.");
+      }
+    }
   };
+
+  const filteredTasks = (tasks || []).filter((task) => {
+    switch (activeTab) {
+      case "my_day":
+        return task.status !== "completed";
+      case "planned":
+        return task.date !== null;
+      case "completed":
+        return task.status === "completed";
+      default:
+        return true;
+    }
+  });
+
+  if (tasksLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" />
+        <UserHeader name={profile.name} />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#6B4EFF" />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      <UserHeader userName="Aiman Reduan" />
+      <UserHeader name={profile.name} />
       <TabNavigation
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />
-      {activeTab === "planned" ? (
+      {!tasks?.length ? (
+        <EmptyState />
+      ) : activeTab === "planned" ? (
         <PlannedView
-          tasks={tasks}
+          tasks={filteredTasks}
           onTaskPress={(task) => navigation.navigate("TaskDetail", { task })}
           onToggleStatus={handleToggleTaskStatus}
         />
       ) : (
-        <TaskList tasks={tasks} onDeleteTask={handleDeleteTask} />
+        <TaskList tasks={filteredTasks} onDeleteTask={handleDeleteTask} />
       )}
     </SafeAreaView>
   );
@@ -128,5 +195,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 32,
+  },
+  emptyText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#666666",
+    textAlign: "center",
+    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
   },
 });

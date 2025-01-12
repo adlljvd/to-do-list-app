@@ -3,13 +3,13 @@ import { View, Text, Image } from "react-native";
 import styles from "./styles";
 
 interface UserHeaderProps {
-  userName: string;
+  name: string;
   avatarUrl?: string;
 }
 
 const UserHeader: React.FC<UserHeaderProps> = ({
-  userName,
-  avatarUrl = `https://ui-avatars.com/api/?name=${userName
+  name,
+  avatarUrl = `https://ui-avatars.com/api/?name=${name
     .split(" ")
     .map((n) => n[0])
     .join("")}&background=6B4EFF&color=fff`,
@@ -18,7 +18,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({
     <View style={styles.headerContainer}>
       <View>
         <Text style={styles.greeting}>Hello,</Text>
-        <Text style={styles.userName}>{userName}</Text>
+        <Text style={styles.userName}>{name}</Text>
       </View>
       <View style={styles.avatarContainer}>
         <Image source={{ uri: avatarUrl }} style={styles.avatar} />

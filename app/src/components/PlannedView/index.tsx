@@ -3,29 +3,13 @@ import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import styles from "./styles";
 import { useNavigation } from "@react-navigation/native";
-
-interface Task {
-  id: number;
-  title: string;
-  description: string;
-  time: string;
-  date: {
-    day: number;
-    month: string;
-    year: number;
-  };
-  status: "pending" | "in_progress" | "completed";
-  priority: "low" | "medium" | "high";
-  category: {
-    name: string;
-    color: string;
-  };
-}
+import { Task } from "../../types/task";
+import { TaskListScreenNavigationProp } from "../../types/navigation";
 
 interface PlannedViewProps {
   tasks: Task[];
   onTaskPress: (task: Task) => void;
-  onToggleStatus: (taskId: number) => void;
+  onToggleStatus: (taskId: string) => void;
 }
 
 const PlannedView: React.FC<PlannedViewProps> = ({
@@ -33,7 +17,7 @@ const PlannedView: React.FC<PlannedViewProps> = ({
   onTaskPress,
   onToggleStatus,
 }) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<TaskListScreenNavigationProp>();
   const currentDate = new Date();
   const daysToShow = [15, 20, 24, 25];
 
@@ -132,7 +116,13 @@ const PlannedView: React.FC<PlannedViewProps> = ({
   );
 
   const renderPendingTasks = () => (
-    <>{tasks.filter((task) => task.status === "pending").map(renderTaskItem)}</>
+    <>
+      {tasks
+        .filter(
+          (task) => task.status === "pending" || task.status === "in_progress"
+        )
+        .map(renderTaskItem)}
+    </>
   );
 
   const renderCompletedTasks = () => {
@@ -153,7 +143,10 @@ const PlannedView: React.FC<PlannedViewProps> = ({
         {renderMonthSelector()}
         {renderDaysScroll()}
       </View>
-      <ScrollView style={styles.plannedTasksList}>
+      <ScrollView
+        style={styles.plannedTasksList}
+        contentContainerStyle={{ paddingBottom: 80 }}
+      >
         {renderPendingTasks()}
         {renderCompletedTasks()}
       </ScrollView>

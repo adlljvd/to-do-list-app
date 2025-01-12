@@ -1,6 +1,7 @@
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { CompositeNavigationProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Task } from "./task";
 
 export type RootStackParamList = {
   Login: undefined;
@@ -8,7 +9,7 @@ export type RootStackParamList = {
   welcome: undefined;
   Home: undefined;
   TaskList: undefined;
-  TaskDetail: { taskId: string };
+  TaskDetail: { task: Task };
   CreateTask: undefined;
   EditTask: undefined;
 };
