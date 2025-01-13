@@ -26,11 +26,20 @@ export const styles = StyleSheet.create({
   section: {
     marginBottom: 24,
   },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "600",
     color: "#1A1A1A",
     marginBottom: 12,
+  },
+  addButton: {
+    padding: 4,
   },
   dateTimeContainer: {
     flexDirection: "row",
@@ -222,5 +231,40 @@ export const styles = StyleSheet.create({
   },
   ampmButtonTextSelected: {
     color: "#FFFFFF",
+  },
+  formGroup: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#1A1A1A",
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: "#F5F5F5",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: "#1A1A1A",
+  },
+  colorPickerContainer: {
+    borderRadius: 8,
+    overflow: "hidden",
+    marginBottom: 12,
+  },
+  selectedColorPreview: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  colorPreview: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+  },
+  colorText: {
+    fontSize: 14,
+    color: "#666666",
   },
 });

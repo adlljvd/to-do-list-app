@@ -7,20 +7,27 @@ import {
   ScrollView,
   Platform,
   KeyboardAvoidingView,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Modal from "react-native-modal";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { styles } from "./styles";
-import { TaskFormProps, TaskFormData, TaskStatus, TaskPriority } from "./types";
+import {
+  TaskFormProps,
+  TaskFormData,
+  TaskStatus,
+  TaskPriority,
+  AMPM,
+} from "./types";
+import { Category } from "../../types/profile";
 
 export default function TaskForm({
   mode,
-  initialData,
   onSubmit,
   disabled,
   profile,
-  onCancel,
+  onAddCategory,
   submitLabel = mode === "create" ? "Create" : "Save",
 }: TaskFormProps) {
   const getCurrentTime = () => {
@@ -32,7 +39,7 @@ export default function TaskForm({
     return {
       hours: formattedHours.toString().padStart(2, "0"),
       minutes: minutes.toString().padStart(2, "0"),
-      ampm,
+      ampm: ampm as AMPM,
     };
   };
 
@@ -43,7 +50,7 @@ export default function TaskForm({
     const { hours, minutes, ampm } = getCurrentTime();
     setHours(hours);
     setMinutes(minutes);
-    setAmPm(ampm);
+    setAmPm(ampm as "AM" | "PM");
     setSelectedPriority("low");
     setSelectedStatus("pending");
     setSelectedCategory("");
@@ -60,10 +67,13 @@ export default function TaskForm({
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [hours, setHours] = useState("12");
   const [minutes, setMinutes] = useState("00");
-  const [ampm, setAmPm] = useState<"AM" | "PM">("AM");
+  const [ampm, setAmPm] = useState<AMPM>("AM");
   const [selectedPriority, setSelectedPriority] = useState<TaskPriority>("low");
   const [selectedStatus, setSelectedStatus] = useState<TaskStatus>("pending");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedColor, setSelectedColor] = useState("#6B4EFF");
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
 
   useEffect(() => {
     if (profile?.categories && profile.categories.length > 0) {
@@ -92,6 +102,24 @@ export default function TaskForm({
     setMinutes(mins.toString().padStart(2, "0"));
 
     setShowTimeModal(false);
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCategory.trim()) return;
+
+    try {
+      const result = await onAddCategory?.({
+        name: newCategory.trim(),
+      });
+
+      if (result) {
+        setNewCategory("");
+        setSelectedCategory(result.name);
+        setShowCategoryModal(false);
+      }
+    } catch (error) {
+      console.error("Error in handleAddCategory:", error);
+    }
   };
 
   const getTimeString = () => {
@@ -218,13 +246,22 @@ export default function TaskForm({
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Category</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Category</Text>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => setShowCategoryModal(true)}
+            disabled={disabled}
+          >
+            <Ionicons name="add-circle-outline" size={24} color="#6B4EFF" />
+          </TouchableOpacity>
+        </View>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.categoryContainer}
         >
-          {profile?.categories?.map((category) => (
+          {profile?.categories?.map((category: Category) => (
             <TouchableOpacity
               key={category._id}
               style={[
@@ -232,7 +269,7 @@ export default function TaskForm({
                 {
                   backgroundColor:
                     selectedCategory === category.name
-                      ? `${category.color}15`
+                      ? `${category.color}40`
                       : "transparent",
                   borderColor: category.color,
                 },
@@ -383,6 +420,53 @@ export default function TaskForm({
                   style={[styles.modalButtonText, styles.confirmButtonText]}
                 >
                   Confirm
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Add Category Modal */}
+      <Modal
+        isVisible={showCategoryModal}
+        onBackdropPress={() => setShowCategoryModal(false)}
+        style={styles.modal}
+        backdropOpacity={0.5}
+        avoidKeyboard={true}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Add Category</Text>
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Category Name</Text>
+              <TextInput
+                style={styles.input}
+                value={newCategory}
+                onChangeText={setNewCategory}
+                placeholder="Enter category name"
+                placeholderTextColor="#666666"
+              />
+            </View>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => setShowCategoryModal(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.confirmButton]}
+                onPress={handleAddCategory}
+                disabled={!newCategory.trim()}
+              >
+                <Text
+                  style={[styles.modalButtonText, styles.confirmButtonText]}
+                >
+                  Add
                 </Text>
               </TouchableOpacity>
             </View>

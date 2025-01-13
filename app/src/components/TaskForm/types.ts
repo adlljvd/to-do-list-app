@@ -1,7 +1,11 @@
-import { Profile } from "../../types/profile";
-
 export type TaskStatus = "pending" | "in_progress" | "completed";
 export type TaskPriority = "low" | "medium" | "high";
+export type AMPM = "AM" | "PM";
+
+export interface Category {
+  name: string;
+  color?: string;
+}
 
 export interface TaskFormData {
   title: string;
@@ -15,10 +19,11 @@ export interface TaskFormData {
 
 export interface TaskFormProps {
   mode: "create" | "edit";
-  initialData?: Partial<TaskFormData>;
+  initialData?: TaskFormData;
   onSubmit: (data: TaskFormData) => void;
-  onCancel: () => void;
-  submitLabel?: string;
   disabled?: boolean;
-  profile?: Profile;
+  profile?: any;
+  onCancel?: () => void;
+  submitLabel?: string;
+  onAddCategory?: (category: Category) => void;
 }

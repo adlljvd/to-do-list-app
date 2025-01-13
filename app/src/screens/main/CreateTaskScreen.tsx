@@ -10,7 +10,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
-import { TaskFormData } from "../../components/TaskForm/types";
+import { Category, TaskFormData } from "../../components/TaskForm/types";
 import TaskForm from "../../components/TaskForm";
 import { API_URL } from "../../config/api";
 import axios from "axios";
@@ -27,14 +27,8 @@ export default function CreateTaskScreen() {
   const { profile } = useSelector((state: RootState) => state.user);
 
   useEffect(() => {
-    // Fetch profile data when screen loads
     dispatch(fetchProfileAsync());
   }, []);
-
-  useEffect(() => {
-    // Debug log for profile
-    console.log("Profile in CreateTaskScreen:", profile);
-  }, [profile]);
 
   const handleCreateTask = async (data: TaskFormData) => {
     if (!data.title.trim()) {
@@ -78,6 +72,35 @@ export default function CreateTaskScreen() {
     }
   };
 
+  const handleAddCategory = async (category: Category) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/categories`,
+        { name: category.name },
+        {
+          headers: {
+            Authorization: `Bearer ${await SecureStore.getItemAsync("token")}`,
+          },
+        }
+      );
+
+      // Refresh profile to get updated categories
+      dispatch(fetchProfileAsync());
+
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        Alert.alert(
+          "Error",
+          error.response?.data?.message || "Failed to create category"
+        );
+      } else {
+        Alert.alert("Error", "Failed to create category. Please try again.");
+      }
+      throw error;
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.container}>
@@ -97,6 +120,7 @@ export default function CreateTaskScreen() {
           onCancel={() => navigation.goBack()}
           disabled={loading}
           profile={profile}
+          onAddCategory={handleAddCategory}
         />
       </View>
     </SafeAreaView>
