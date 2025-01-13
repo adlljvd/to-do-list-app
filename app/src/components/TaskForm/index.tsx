@@ -28,6 +28,7 @@ export default function TaskForm({
   disabled,
   profile,
   onAddCategory,
+  onDeleteCategory,
   submitLabel = mode === "create" ? "Create" : "Save",
 }: TaskFormProps) {
   const getCurrentTime = () => {
@@ -71,7 +72,6 @@ export default function TaskForm({
   const [selectedPriority, setSelectedPriority] = useState<TaskPriority>("low");
   const [selectedStatus, setSelectedStatus] = useState<TaskStatus>("pending");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedColor, setSelectedColor] = useState("#6B4EFF");
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategory, setNewCategory] = useState("");
 
@@ -262,27 +262,60 @@ export default function TaskForm({
           style={styles.categoryContainer}
         >
           {profile?.categories?.map((category: Category) => (
-            <TouchableOpacity
-              key={category._id}
-              style={[
-                styles.categoryButton,
-                {
-                  backgroundColor:
-                    selectedCategory === category.name
-                      ? `${category.color}40`
-                      : "transparent",
-                  borderColor: category.color,
-                },
-              ]}
-              onPress={() => setSelectedCategory(category.name)}
-              disabled={disabled}
-            >
-              <Text
-                style={[styles.categoryButtonText, { color: category.color }]}
+            <View key={category._id} style={styles.categoryWrapper}>
+              <TouchableOpacity
+                style={[
+                  styles.categoryButton,
+                  {
+                    backgroundColor:
+                      selectedCategory === category.name
+                        ? `${category.color}40`
+                        : "transparent",
+                    borderColor: category.color,
+                  },
+                ]}
+                onPress={() => setSelectedCategory(category.name)}
+                disabled={disabled}
               >
-                {category.name}
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={[styles.categoryButtonText, { color: category.color }]}
+                >
+                  {category.name}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.deleteCategoryButton}
+                onPress={() => {
+                  Alert.alert(
+                    "Delete Category",
+                    `Are you sure you want to delete "${category.name}"?`,
+                    [
+                      {
+                        text: "Cancel",
+                        style: "cancel",
+                      },
+                      {
+                        text: "Delete",
+                        style: "destructive",
+                        onPress: async () => {
+                          try {
+                            await onDeleteCategory?.(category._id);
+                            if (selectedCategory === category.name) {
+                              setSelectedCategory("");
+                            }
+                          } catch (error) {
+                            console.log(error);
+                          }
+                        },
+                      },
+                    ]
+                  );
+                }}
+                disabled={disabled}
+              >
+                <Ionicons name="close-circle" size={18} color="#FF4444" />
+              </TouchableOpacity>
+            </View>
           ))}
         </ScrollView>
       </View>

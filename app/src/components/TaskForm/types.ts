@@ -19,11 +19,11 @@ export interface TaskFormData {
 
 export interface TaskFormProps {
   mode: "create" | "edit";
-  initialData?: TaskFormData;
   onSubmit: (data: TaskFormData) => void;
+  onCancel?: () => void;
   disabled?: boolean;
   profile?: any;
-  onCancel?: () => void;
+  onAddCategory?: (category: Category) => Promise<any>;
+  onDeleteCategory?: (categoryId: string) => Promise<void>;
   submitLabel?: string;
-  onAddCategory?: (category: Category) => void;
 }

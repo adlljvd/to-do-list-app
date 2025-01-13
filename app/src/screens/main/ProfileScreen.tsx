@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,9 +12,18 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import * as SecureStore from "expo-secure-store";
 import AuthContext from "../../context/AuthContext";
+import { fetchProfileAsync } from "../../store/slices/userSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../store";
 
 export default function ProfileScreen() {
+  const dispatch = useDispatch<AppDispatch>();
   const { setIsLogin } = useContext(AuthContext);
+  const { profile } = useSelector((state: RootState) => state.user);
+
+  useEffect(() => {
+    dispatch(fetchProfileAsync());
+  }, []);
 
   const handleLogout = async () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -43,13 +52,16 @@ export default function ProfileScreen() {
         <View style={styles.profileHeader}>
           <Image
             source={{
-              uri: "https://ui-avatars.com/api/?name=Aiman+Reduan&background=6B4EFF&color=fff",
+              uri: `https://ui-avatars.com/api/?name=${profile.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")}&background=6B4EFF&color=fff`,
             }}
             style={styles.avatar}
           />
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>Aiman Reduan</Text>
-            <Text style={styles.profileEmail}>aiman@example.com</Text>
+            <Text style={styles.profileName}>{profile.name}</Text>
+            <Text style={styles.profileEmail}>{profile.email}</Text>
           </View>
         </View>
       </View>

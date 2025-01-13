@@ -101,6 +101,30 @@ export default function CreateTaskScreen() {
     }
   };
 
+  const handleDeleteCategory = async (categoryId: string) => {
+    try {
+      console.log(categoryId, "categoryId");
+      await axios.delete(`${API_URL}/categories/${categoryId}`, {
+        headers: {
+          Authorization: `Bearer ${await SecureStore.getItemAsync("token")}`,
+        },
+      });
+
+      // Refresh profile to get updated categories
+      dispatch(fetchProfileAsync());
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        Alert.alert(
+          "Error",
+          error.response?.data?.message || "Failed to delete category"
+        );
+      } else {
+        Alert.alert("Error", "Failed to delete category. Please try again.");
+      }
+      throw error;
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.container}>
@@ -121,6 +145,7 @@ export default function CreateTaskScreen() {
           disabled={loading}
           profile={profile}
           onAddCategory={handleAddCategory}
+          onDeleteCategory={handleDeleteCategory}
         />
       </View>
     </SafeAreaView>

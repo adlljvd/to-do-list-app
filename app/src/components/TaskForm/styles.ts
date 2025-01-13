@@ -267,4 +267,16 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666666",
   },
+  categoryWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 8,
+  },
+  deleteCategoryButton: {
+    marginLeft: -10,
+    marginTop: -10,
+    padding: 2,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
+  },
 });
