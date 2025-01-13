@@ -9,7 +9,6 @@ import {
   Platform,
   ActivityIndicator,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchTasksAsync,
@@ -25,7 +24,6 @@ import UserHeader from "../../components/UserHeader";
 import TabNavigation from "../../components/TabNavigation";
 import PlannedView from "../../components/PlannedView";
 import TaskList from "../../components/TaskList";
-import { TaskListScreenNavigationProp } from "../../types/navigation";
 import { fetchProfileAsync } from "../../store/slices/userSlice";
 
 const tabs = [
@@ -42,21 +40,12 @@ const EmptyState = () => (
 );
 
 export default function TaskListScreen() {
-  const navigation = useNavigation<TaskListScreenNavigationProp>();
   const dispatch = useDispatch<AppDispatch>();
   const [activeTab, setActiveTab] = useState<string>("my_day");
   const { tasks, loading: tasksLoading } = useSelector(
     (state: RootState) => state.tasks
   );
-  const [myProfile, setMyProfile] = useState<Profile>({
-    userId: "",
-    name: "",
-    email: "",
-    role: "",
-  });
-  const { profile, loading: profileLoading } = useSelector(
-    (state: RootState) => state.user
-  );
+  const { profile } = useSelector((state: RootState) => state.user);
 
   useEffect(() => {
     dispatch(fetchTasksAsync());
@@ -112,33 +101,51 @@ export default function TaskListScreen() {
       const currentTask = tasks.find((task) => task.id === taskId);
       if (!currentTask) return;
 
-      // Optimistic update
-      dispatch(toggleTaskStatus({ taskId }));
-
-      // API call
-      await axios.put(
-        `${API_URL}/tasks/${taskId}`,
-        {
-          status:
-            currentTask.status === "completed"
-              ? currentTask.status
-              : "completed",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${await SecureStore.getItemAsync("token")}`,
-          },
+      const nextStatus = (() => {
+        switch (currentTask.status) {
+          case "completed":
+            return "in_progress";
+          case "in_progress":
+            return "completed";
+          case "pending":
+            return "completed";
+          default:
+            return "pending";
         }
-      );
+      })();
+
+      dispatch(toggleTaskStatus({ taskId, status: nextStatus }));
+
+      axios
+        .put(
+          `${API_URL}/tasks/${taskId}`,
+          {
+            status: nextStatus,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${await SecureStore.getItemAsync(
+                "token"
+              )}`,
+            },
+          }
+        )
+        .catch((error) => {
+          dispatch(toggleTaskStatus({ taskId, status: currentTask.status }));
+
+          if (axios.isAxiosError(error)) {
+            const message =
+              error.response?.data?.message || "Toggle task status failed";
+            Alert.alert("Error", message);
+          } else {
+            Alert.alert(
+              "Error",
+              "Toggle task status failed. Please try again."
+            );
+          }
+        });
     } catch (error) {
-      dispatch(fetchTasksAsync());
-      if (axios.isAxiosError(error)) {
-        const message =
-          error.response?.data?.message || "Toggle task status failed";
-        Alert.alert("Error", message);
-      } else {
-        Alert.alert("Error", "Toggle task status failed. Please try again.");
-      }
+      console.error("Error toggling task status:", error);
     }
   };
 
@@ -181,7 +188,6 @@ export default function TaskListScreen() {
       ) : activeTab === "planned" ? (
         <PlannedView
           tasks={filteredTasks}
-          onTaskPress={(task) => navigation.navigate("TaskDetail", { task })}
           onToggleStatus={handleToggleTaskStatus}
         />
       ) : (

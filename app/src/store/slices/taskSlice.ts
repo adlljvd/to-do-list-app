@@ -48,7 +48,7 @@ export const taskSlice = createSlice({
                   : task.status === "in_progress"
                   ? "completed"
                   : task.status === "pending"
-                  ? "in_progress"
+                  ? "completed"
                   : "pending",
             }
           : task
@@ -67,7 +67,7 @@ export const {
 export const fetchTasksAsync = () => async (dispatch: AppDispatch) => {
   try {
     dispatch(fetchTasksPending());
-    const { data } = await axios.get(`${API_URL}/tasks`, {
+    const { data } = await axios.get(`${API_URL}/tasks?sort=dueDate`, {
       headers: {
         Authorization: `Bearer ${await SecureStore.getItemAsync("token")}`,
       },

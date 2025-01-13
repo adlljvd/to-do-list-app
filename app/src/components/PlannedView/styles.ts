@@ -120,4 +120,11 @@ export default StyleSheet.create({
     marginBottom: 16,
     paddingHorizontal: 24,
   },
+  selectedCell: {
+    backgroundColor: "#6B4EFF",
+    borderColor: "#6B4EFF",
+  },
+  selectedText: {
+    color: "#FFFFFF",
+  },
 });

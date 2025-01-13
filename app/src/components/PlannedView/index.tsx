@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import styles from "./styles";
@@ -8,46 +8,194 @@ import { TaskListScreenNavigationProp } from "../../types/navigation";
 
 interface PlannedViewProps {
   tasks: Task[];
-  onTaskPress: (task: Task) => void;
   onToggleStatus: (taskId: string) => void;
 }
 
-const PlannedView: React.FC<PlannedViewProps> = ({
-  tasks,
-  onTaskPress,
-  onToggleStatus,
-}) => {
+const PlannedView: React.FC<PlannedViewProps> = ({ tasks, onToggleStatus }) => {
   const navigation = useNavigation<TaskListScreenNavigationProp>();
   const currentDate = new Date();
-  const daysToShow = [15, 20, 24, 25];
+  const [selectedDate, setSelectedDate] = useState<Date>(currentDate);
+  const [selectedMonth, setSelectedMonth] = useState<Date>(currentDate);
+
+  // Get all available months that have tasks
+  const availableMonths = useMemo(() => {
+    const months = new Set<string>();
+    tasks.forEach((task) => {
+      if (task.date) {
+        const monthKey = `${task.date.year}-${task.date.month}`;
+        months.add(monthKey);
+      }
+    });
+    return Array.from(months)
+      .map((monthKey) => {
+        const [year, month] = monthKey.split("-");
+        return {
+          date: new Date(
+            parseInt(year),
+            [
+              "January",
+              "February",
+              "March",
+              "April",
+              "May",
+              "June",
+              "July",
+              "August",
+              "September",
+              "October",
+              "November",
+              "December",
+            ].indexOf(month),
+            1
+          ),
+          monthKey,
+        };
+      })
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
+  }, [tasks]);
+
+  // Get current month index from available months
+  const currentMonthIndex = useMemo(() => {
+    const selectedMonthKey = `${selectedMonth.getFullYear()}-${
+      [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ][selectedMonth.getMonth()]
+    }`;
+    return availableMonths.findIndex((m) => m.monthKey === selectedMonthKey);
+  }, [selectedMonth, availableMonths]);
 
   const renderMonthSelector = () => (
     <View style={styles.monthSelector}>
-      <TouchableOpacity style={styles.monthArrow}>
-        <Ionicons name="chevron-back" size={24} color="#666666" />
+      <TouchableOpacity
+        style={styles.monthArrow}
+        disabled={currentMonthIndex <= 0}
+        onPress={() => {
+          if (currentMonthIndex > 0) {
+            setSelectedMonth(availableMonths[currentMonthIndex - 1].date);
+          }
+        }}
+      >
+        <Ionicons
+          name="chevron-back"
+          size={24}
+          color={currentMonthIndex <= 0 ? "#CCCCCC" : "#666666"}
+        />
       </TouchableOpacity>
-      <Text style={styles.currentMonth}>May 2020</Text>
-      <TouchableOpacity style={styles.monthArrow}>
-        <Ionicons name="chevron-forward" size={24} color="#666666" />
+      <Text style={styles.currentMonth}>
+        {selectedMonth.toLocaleDateString("en-US", {
+          month: "long",
+          year: "numeric",
+        })}
+      </Text>
+      <TouchableOpacity
+        style={styles.monthArrow}
+        disabled={currentMonthIndex >= availableMonths.length - 1}
+        onPress={() => {
+          if (currentMonthIndex < availableMonths.length - 1) {
+            setSelectedMonth(availableMonths[currentMonthIndex + 1].date);
+          }
+        }}
+      >
+        <Ionicons
+          name="chevron-forward"
+          size={24}
+          color={
+            currentMonthIndex >= availableMonths.length - 1
+              ? "#CCCCCC"
+              : "#666666"
+          }
+        />
       </TouchableOpacity>
     </View>
   );
 
+  // Get all days in current month that have tasks
+  const daysWithTasks = useMemo(() => {
+    const days = new Set<number>(); // Specify type as number
+    tasks.forEach((task) => {
+      if (task.date) {
+        const taskDate = new Date(
+          task.date.year,
+          [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+          ].indexOf(task.date.month),
+          task.date.day
+        );
+        if (
+          taskDate.getMonth() === selectedMonth.getMonth() &&
+          taskDate.getFullYear() === selectedMonth.getFullYear()
+        ) {
+          days.add(taskDate.getDate());
+        }
+      }
+    });
+    return Array.from(days).sort((a, b) => a - b); // Will return number[]
+  }, [tasks, selectedMonth]);
+
   const renderDayCell = (day: number) => {
-    const isToday = day === 20;
-    const date = new Date(2020, 4, day);
-    const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
+    const date = new Date(
+      selectedMonth.getFullYear(),
+      selectedMonth.getMonth(),
+      day
+    );
+    const isSelected =
+      selectedDate.getDate() === day &&
+      selectedDate.getMonth() === date.getMonth() &&
+      selectedDate.getFullYear() === date.getFullYear();
+    const isToday =
+      currentDate.getDate() === day &&
+      currentDate.getMonth() === date.getMonth() &&
+      currentDate.getFullYear() === date.getFullYear();
 
     return (
       <TouchableOpacity
         key={day}
-        style={[styles.dayCell, isToday && styles.todayCell]}
+        style={[
+          styles.dayCell,
+          isToday && styles.todayCell,
+          isSelected && styles.selectedCell,
+        ]}
+        onPress={() => setSelectedDate(date)}
       >
-        <Text style={[styles.dayNumber, isToday && styles.todayText]}>
+        <Text
+          style={[
+            styles.dayNumber,
+            isToday && styles.todayText,
+            isSelected && styles.selectedText,
+          ]}
+        >
           {day}
         </Text>
-        <Text style={[styles.dayName, isToday && styles.todayText]}>
-          {dayName}
+        <Text
+          style={[
+            styles.dayName,
+            isToday && styles.todayText,
+            isSelected && styles.selectedText,
+          ]}
+        >
+          {date.toLocaleDateString("en-US", { weekday: "short" })}
         </Text>
       </TouchableOpacity>
     );
@@ -59,9 +207,39 @@ const PlannedView: React.FC<PlannedViewProps> = ({
       showsHorizontalScrollIndicator={false}
       style={styles.daysScroll}
     >
-      {daysToShow.map(renderDayCell)}
+      {daysWithTasks.map(renderDayCell)}
     </ScrollView>
   );
+
+  // Filter tasks for selected date
+  const filteredTasks = useMemo(() => {
+    return tasks.filter((task) => {
+      if (!task.date) return false;
+      const taskDate = new Date(
+        task.date.year,
+        [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ].indexOf(task.date.month),
+        task.date.day
+      );
+      return (
+        taskDate.getDate() === selectedDate.getDate() &&
+        taskDate.getMonth() === selectedDate.getMonth() &&
+        taskDate.getFullYear() === selectedDate.getFullYear()
+      );
+    });
+  }, [tasks, selectedDate]);
 
   const renderTaskItem = (task: Task) => (
     <TouchableOpacity
@@ -117,7 +295,7 @@ const PlannedView: React.FC<PlannedViewProps> = ({
 
   const renderPendingTasks = () => (
     <>
-      {tasks
+      {filteredTasks
         .filter(
           (task) => task.status === "pending" || task.status === "in_progress"
         )
@@ -126,7 +304,9 @@ const PlannedView: React.FC<PlannedViewProps> = ({
   );
 
   const renderCompletedTasks = () => {
-    const completedTasks = tasks.filter((task) => task.status === "completed");
+    const completedTasks = filteredTasks.filter(
+      (task) => task.status === "completed"
+    );
     if (completedTasks.length === 0) return null;
 
     return (
