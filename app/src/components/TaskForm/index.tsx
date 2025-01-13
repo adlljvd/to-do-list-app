@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,60 +6,111 @@ import {
   TouchableOpacity,
   ScrollView,
   Platform,
+  KeyboardAvoidingView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Modal from "react-native-modal";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { styles } from "./styles";
-import {
-  TaskFormProps,
-  TaskFormData,
-  Category,
-  TaskStatus,
-  TaskPriority,
-} from "./types";
-
-const categories: Category[] = [
-  { name: "Work", color: "#FF5252" },
-  { name: "Meeting", color: "#2196F3" },
-  { name: "Personal", color: "#4CAF50" },
-  { name: "Shopping", color: "#9C27B0" },
-];
+import { TaskFormProps, TaskFormData, TaskStatus, TaskPriority } from "./types";
 
 export default function TaskForm({
   mode,
   initialData,
   onSubmit,
+  disabled,
+  profile,
   onCancel,
   submitLabel = mode === "create" ? "Create" : "Save",
 }: TaskFormProps) {
-  const [title, setTitle] = useState(initialData?.title || "");
-  const [description, setDescription] = useState(
-    initialData?.description || ""
-  );
-  const [date, setDate] = useState(initialData?.date || new Date());
+  const getCurrentTime = () => {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
+    const formattedHours = hours % 12 || 12;
+    return {
+      hours: formattedHours.toString().padStart(2, "0"),
+      minutes: minutes.toString().padStart(2, "0"),
+      ampm,
+    };
+  };
+
+  const resetForm = () => {
+    setTitle("");
+    setDescription("");
+    setDueDate(new Date());
+    const { hours, minutes, ampm } = getCurrentTime();
+    setHours(hours);
+    setMinutes(minutes);
+    setAmPm(ampm);
+    setSelectedPriority("low");
+    setSelectedStatus("pending");
+    setSelectedCategory("");
+  };
+
+  useEffect(() => {
+    resetForm();
+  }, []);
+
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [dueDate, setDueDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
-  const [selectedPriority, setSelectedPriority] = useState<TaskPriority>(
-    initialData?.priority || "medium"
-  );
-  const [selectedStatus, setSelectedStatus] = useState<TaskStatus>(
-    initialData?.status || "pending"
-  );
-  const [selectedCategory, setSelectedCategory] = useState<Category>(
-    initialData?.category || categories[0]
-  );
+  const [showTimeModal, setShowTimeModal] = useState(false);
+  const [hours, setHours] = useState("12");
+  const [minutes, setMinutes] = useState("00");
+  const [ampm, setAmPm] = useState<"AM" | "PM">("AM");
+  const [selectedPriority, setSelectedPriority] = useState<TaskPriority>("low");
+  const [selectedStatus, setSelectedStatus] = useState<TaskStatus>("pending");
+  const [selectedCategory, setSelectedCategory] = useState("");
+
+  useEffect(() => {
+    if (profile?.categories && profile.categories.length > 0) {
+      setSelectedCategory(profile.categories[0].name);
+    }
+  }, [profile]);
+
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    if (selectedDate) {
+      setDueDate(selectedDate);
+    }
+    setShowDatePicker(false);
+  };
+
+  const handleTimeChange = () => {
+    // Validate hours
+    let hrs = parseInt(hours);
+    if (isNaN(hrs) || hrs < 1) hrs = 1;
+    if (hrs > 12) hrs = 12;
+    setHours(hrs.toString().padStart(2, "0"));
+
+    // Validate minutes
+    let mins = parseInt(minutes);
+    if (isNaN(mins) || mins < 0) mins = 0;
+    if (mins > 59) mins = 59;
+    setMinutes(mins.toString().padStart(2, "0"));
+
+    setShowTimeModal(false);
+  };
+
+  const getTimeString = () => {
+    return `${hours}:${minutes} ${ampm}`;
+  };
 
   const handleSubmit = () => {
     const formData: TaskFormData = {
       title,
       description,
-      date,
+      dueDate,
+      time: getTimeString(),
       status: selectedStatus,
       priority: selectedPriority,
       category: selectedCategory,
     };
+    console.log("Submitting form data:", formData);
     onSubmit(formData);
+    resetForm();
   };
 
   return (
@@ -70,6 +121,7 @@ export default function TaskForm({
         value={title}
         onChangeText={setTitle}
         placeholderTextColor="#666666"
+        editable={!disabled}
       />
 
       <TextInput
@@ -79,6 +131,7 @@ export default function TaskForm({
         onChangeText={setDescription}
         multiline
         placeholderTextColor="#666666"
+        editable={!disabled}
       />
 
       <View style={styles.section}>
@@ -87,10 +140,11 @@ export default function TaskForm({
           <TouchableOpacity
             style={styles.dateTimeButton}
             onPress={() => setShowDatePicker(true)}
+            disabled={disabled}
           >
             <Ionicons name="calendar-outline" size={20} color="#666666" />
             <Text style={styles.dateTimeText}>
-              {date.toLocaleDateString("en-US", {
+              {dueDate.toLocaleDateString("en-US", {
                 day: "numeric",
                 month: "short",
                 year: "numeric",
@@ -100,16 +154,11 @@ export default function TaskForm({
 
           <TouchableOpacity
             style={styles.dateTimeButton}
-            onPress={() => setShowTimePicker(true)}
+            onPress={() => setShowTimeModal(true)}
+            disabled={disabled}
           >
             <Ionicons name="time-outline" size={20} color="#666666" />
-            <Text style={styles.dateTimeText}>
-              {date.toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: true,
-              })}
-            </Text>
+            <Text style={styles.dateTimeText}>{getTimeString()}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -125,6 +174,7 @@ export default function TaskForm({
                 selectedStatus === status && styles.statusButtonSelected,
               ]}
               onPress={() => setSelectedStatus(status as TaskStatus)}
+              disabled={disabled}
             >
               <Text
                 style={[
@@ -151,6 +201,7 @@ export default function TaskForm({
                 selectedPriority === priority && styles.priorityButtonSelected,
               ]}
               onPress={() => setSelectedPriority(priority as TaskPriority)}
+              disabled={disabled}
             >
               <Text
                 style={[
@@ -173,20 +224,21 @@ export default function TaskForm({
           showsHorizontalScrollIndicator={false}
           style={styles.categoryContainer}
         >
-          {categories.map((category) => (
+          {profile?.categories?.map((category) => (
             <TouchableOpacity
-              key={category.name}
+              key={category._id}
               style={[
                 styles.categoryButton,
                 {
                   backgroundColor:
-                    selectedCategory.name === category.name
+                    selectedCategory === category.name
                       ? `${category.color}15`
                       : "transparent",
                   borderColor: category.color,
                 },
               ]}
-              onPress={() => setSelectedCategory(category)}
+              onPress={() => setSelectedCategory(category.name)}
+              disabled={disabled}
             >
               <Text
                 style={[styles.categoryButtonText, { color: category.color }]}
@@ -198,76 +250,134 @@ export default function TaskForm({
         </ScrollView>
       </View>
 
+      {/* Date Picker Modal */}
       <Modal
-        isVisible={showDatePicker || showTimePicker}
-        onBackdropPress={() => {
-          setShowDatePicker(false);
-          setShowTimePicker(false);
-        }}
+        isVisible={showDatePicker}
+        onBackdropPress={() => setShowDatePicker(false)}
         style={styles.modal}
         backdropOpacity={0.5}
       >
         <View style={styles.modalContent}>
-          <View style={styles.pickerContainer}>
-            {Platform.OS === "ios" ? (
-              <DateTimePicker
-                value={date}
-                mode={showDatePicker ? "date" : "time"}
-                display="spinner"
-                onChange={(event, selectedDate) => {
-                  if (selectedDate) {
-                    if (showDatePicker) {
-                      setDate(selectedDate);
-                    } else {
-                      const newDate = new Date(date);
-                      newDate.setHours(selectedDate.getHours());
-                      newDate.setMinutes(selectedDate.getMinutes());
-                      setDate(newDate);
-                    }
-                  }
-                }}
-                textColor="#000000"
-                themeVariant="light"
-              />
-            ) : (
-              <DateTimePicker
-                value={date}
-                mode={showDatePicker ? "date" : "time"}
-                display="default"
-                onChange={(event, selectedDate) => {
-                  if (event.type === "set" && selectedDate) {
-                    if (showDatePicker) {
-                      setDate(selectedDate);
-                    } else {
-                      const newDate = new Date(date);
-                      newDate.setHours(selectedDate.getHours());
-                      newDate.setMinutes(selectedDate.getMinutes());
-                      setDate(newDate);
-                    }
-                  }
-                  setShowDatePicker(false);
-                  setShowTimePicker(false);
-                }}
-              />
-            )}
+          <Text style={styles.modalTitle}>Set Date</Text>
+          <View style={styles.datePickerContainer}>
+            <DateTimePicker
+              value={dueDate}
+              mode="date"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              onChange={(event, selectedDate) => {
+                if (selectedDate) {
+                  setDueDate(selectedDate);
+                }
+              }}
+              style={{ width: Platform.OS === "ios" ? "100%" : "auto" }}
+              textColor="#1A1A1A"
+              themeVariant="light"
+            />
           </View>
-          {Platform.OS === "ios" && (
+          <View style={styles.modalButtons}>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => setShowDatePicker(false)}
+            >
+              <Text style={styles.modalButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.modalButton, styles.confirmButton]}
+              onPress={() => handleDateChange(null, dueDate)}
+            >
+              <Text style={[styles.modalButtonText, styles.confirmButtonText]}>
+                Confirm
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Time Picker Modal */}
+      <Modal
+        isVisible={showTimeModal}
+        onBackdropPress={() => setShowTimeModal(false)}
+        style={styles.modal}
+        backdropOpacity={0.5}
+        avoidKeyboard={true}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Set Time</Text>
+            <View style={styles.timeInputContainer}>
+              <View style={styles.timeInput}>
+                <TextInput
+                  style={styles.timeInputField}
+                  value={hours}
+                  onChangeText={(text) => {
+                    const nums = text.replace(/[^0-9]/g, "");
+                    if (nums.length <= 2) setHours(nums);
+                  }}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                  placeholder="HH"
+                />
+                <Text style={styles.timeInputSeparator}>:</Text>
+                <TextInput
+                  style={styles.timeInputField}
+                  value={minutes}
+                  onChangeText={(text) => {
+                    const nums = text.replace(/[^0-9]/g, "");
+                    if (nums.length <= 2) setMinutes(nums);
+                  }}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                  placeholder="MM"
+                />
+                <View style={styles.ampmContainer}>
+                  <TouchableOpacity
+                    style={[
+                      styles.ampmButton,
+                      ampm === "AM" && styles.ampmButtonSelected,
+                    ]}
+                    onPress={() => setAmPm("AM")}
+                  >
+                    <Text
+                      style={[
+                        styles.ampmButtonText,
+                        ampm === "AM" && styles.ampmButtonTextSelected,
+                      ]}
+                    >
+                      AM
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.ampmButton,
+                      ampm === "PM" && styles.ampmButtonSelected,
+                    ]}
+                    onPress={() => setAmPm("PM")}
+                  >
+                    <Text
+                      style={[
+                        styles.ampmButtonText,
+                        ampm === "PM" && styles.ampmButtonTextSelected,
+                      ]}
+                    >
+                      PM
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={styles.modalButton}
-                onPress={() => {
-                  setShowDatePicker(false);
-                  setShowTimePicker(false);
-                }}
+                onPress={() => setShowTimeModal(false)}
               >
                 <Text style={styles.modalButtonText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, styles.confirmButton]}
-                onPress={() => {
-                  setShowDatePicker(false);
-                  setShowTimePicker(false);
-                }}
+                onPress={handleTimeChange}
               >
                 <Text
                   style={[styles.modalButtonText, styles.confirmButtonText]}
@@ -276,9 +386,26 @@ export default function TaskForm({
                 </Text>
               </TouchableOpacity>
             </View>
-          )}
-        </View>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
+
+      {mode === "create" && (
+        <TouchableOpacity
+          style={[styles.submitButton, disabled && styles.submitButtonDisabled]}
+          onPress={handleSubmit}
+          disabled={disabled || !title.trim()}
+        >
+          <Text
+            style={[
+              styles.submitButtonText,
+              disabled && styles.submitButtonTextDisabled,
+            ]}
+          >
+            {disabled ? "Creating..." : submitLabel}
+          </Text>
+        </TouchableOpacity>
+      )}
     </ScrollView>
   );
 }

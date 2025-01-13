@@ -1,18 +1,16 @@
+import { Profile } from "../../types/profile";
+
 export type TaskStatus = "pending" | "in_progress" | "completed";
 export type TaskPriority = "low" | "medium" | "high";
-
-export interface Category {
-  name: string;
-  color: string;
-}
 
 export interface TaskFormData {
   title: string;
   description: string;
-  date: Date;
+  dueDate: Date;
+  time: string;
   status: TaskStatus;
   priority: TaskPriority;
-  category: Category;
+  category: string;
 }
 
 export interface TaskFormProps {
@@ -21,4 +19,6 @@ export interface TaskFormProps {
   onSubmit: (data: TaskFormData) => void;
   onCancel: () => void;
   submitLabel?: string;
+  disabled?: boolean;
+  profile?: Profile;
 }

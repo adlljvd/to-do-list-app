@@ -17,14 +17,13 @@ import {
 import { AppDispatch, RootState } from "../../store";
 import { API_URL } from "../../config/api";
 import { Ionicons } from "@expo/vector-icons";
-import { Profile } from "../../types/profile";
+import { fetchProfileAsync } from "../../store/slices/userSlice";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 import UserHeader from "../../components/UserHeader";
 import TabNavigation from "../../components/TabNavigation";
 import PlannedView from "../../components/PlannedView";
 import TaskList from "../../components/TaskList";
-import { fetchProfileAsync } from "../../store/slices/userSlice";
 
 const tabs = [
   { id: "my_day", name: "My Day" },

@@ -1,5 +1,6 @@
-import { StyleSheet } from "react-native";
-import { Platform } from "react-native";
+import { StyleSheet, Dimensions, Platform } from "react-native";
+
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export const styles = StyleSheet.create({
   container: {
@@ -108,25 +109,50 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
+  submitButton: {
+    backgroundColor: "#6B4EFF",
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 24,
+    marginBottom: Platform.OS === "ios" ? 40 : 24,
+  },
+  submitButtonDisabled: {
+    backgroundColor: "#E0E0E0",
+  },
+  submitButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  submitButtonTextDisabled: {
+    color: "#999999",
+  },
   modal: {
-    justifyContent: "flex-end",
     margin: 0,
+    justifyContent: "flex-end",
   },
   modalContent: {
-    backgroundColor: "white",
+    backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingTop: 20,
-    paddingBottom: Platform.OS === "ios" ? 40 : 20,
+    padding: 20,
+    maxHeight: SCREEN_HEIGHT * 0.6,
   },
-  pickerContainer: {
-    backgroundColor: "white",
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#1A1A1A",
+    textAlign: "center",
+    marginBottom: 10,
   },
   modalButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingTop: 15,
+    marginBottom: 20,
   },
   modalButton: {
     paddingVertical: 10,
@@ -143,5 +169,58 @@ export const styles = StyleSheet.create({
   confirmButtonText: {
     color: "white",
     fontWeight: "600",
+  },
+  datePickerContainer: {
+    marginVertical: 20,
+    alignItems: "center",
+    backgroundColor: "#F5F5F5",
+    borderRadius: 8,
+    padding: 10,
+  },
+  timeInputContainer: {
+    marginVertical: 20,
+    alignItems: "center",
+  },
+  timeInput: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F5F5F5",
+    borderRadius: 8,
+    padding: 10,
+  },
+  timeInputField: {
+    fontSize: 24,
+    fontWeight: "600",
+    width: 50,
+    textAlign: "center",
+    color: "#1A1A1A",
+  },
+  timeInputSeparator: {
+    fontSize: 24,
+    fontWeight: "600",
+    marginHorizontal: 5,
+    color: "#1A1A1A",
+  },
+  ampmContainer: {
+    flexDirection: "row",
+    marginLeft: 15,
+  },
+  ampmButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+    marginHorizontal: 2,
+    backgroundColor: "#FFFFFF",
+  },
+  ampmButtonSelected: {
+    backgroundColor: "#007AFF",
+  },
+  ampmButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1A1A1A",
+  },
+  ampmButtonTextSelected: {
+    color: "#FFFFFF",
   },
 });
