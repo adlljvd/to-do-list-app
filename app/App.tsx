@@ -1,5 +1,5 @@
 import { createStaticNavigation } from "@react-navigation/native";
-import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 import { store } from "./src/store";
 import RootStack from "./src/navigation/RootStack";
@@ -12,6 +12,7 @@ import {
   setStatusBarBackgroundColor,
   setStatusBarStyle,
 } from "expo-status-bar";
+import { NetworkMonitor } from "./src/components/NetworkMonitor";
 
 const Navigation = createStaticNavigation(RootStack);
 
@@ -37,6 +38,7 @@ export default function App() {
     <Provider store={store}>
       <AuthContext.Provider value={{ isLogin, setIsLogin }}>
         <SafeAreaProvider>
+          <NetworkMonitor />
           <View style={{ flex: 1, backgroundColor: "#1A1A1A" }}>
             <StatusBar style="light" backgroundColor="#1A1A1A" />
             <Navigation />
