@@ -118,18 +118,23 @@ export const addTaskAsync = (task: Task) => async (dispatch: AppDispatch) => {
     const currentTasks = await StorageService.loadTasks();
     await StorageService.saveTasks([...currentTasks, data.data]);
   } catch (error) {
-    // If offline, save locally and add to pending changes
-    const currentTasks = await StorageService.loadTasks();
-    const tempTask = { ...task, id: Date.now().toString() }; // Temporary ID
-    await StorageService.saveTasks([...currentTasks, tempTask]);
+    console.log("Error in addTaskAsync:", error);
+    // If offline or network error, save locally and add to pending changes
+    if (axios.isAxiosError(error) && !error.response) {
+      const currentTasks = await StorageService.loadTasks();
+      const tempTask = { ...task, id: Date.now().toString() };
+      await StorageService.saveTasks([...currentTasks, tempTask]);
 
-    const pendingChanges = await StorageService.loadPendingChanges();
-    await StorageService.savePendingChanges([
-      ...pendingChanges,
-      { type: "ADD", task: tempTask },
-    ]);
+      const pendingChanges = await StorageService.loadPendingChanges();
+      await StorageService.savePendingChanges([
+        ...pendingChanges,
+        { type: "ADD", task: tempTask },
+      ]);
 
-    dispatch(addTask(tempTask));
+      dispatch(addTask(tempTask));
+    } else {
+      throw error;
+    }
   }
 };
 
@@ -137,7 +142,6 @@ export const addTaskAsync = (task: Task) => async (dispatch: AppDispatch) => {
 export const updateTaskAsync =
   (task: Task) => async (dispatch: AppDispatch) => {
     try {
-      // Try to update in API
       const { data } = await axios.put(`${API_URL}/tasks/${task.id}`, task, {
         headers: {
           Authorization: `Bearer ${await SecureStore.getItemAsync("token")}`,
@@ -151,20 +155,24 @@ export const updateTaskAsync =
       );
       await StorageService.saveTasks(updatedTasks);
     } catch (error) {
-      // If offline, update locally and add to pending changes
-      const currentTasks = await StorageService.loadTasks();
-      const updatedTasks = currentTasks.map((t) =>
-        t.id === task.id ? task : t
-      );
-      await StorageService.saveTasks(updatedTasks);
+      console.log("Error in updateTaskAsync:", error);
+      if (axios.isAxiosError(error) && !error.response) {
+        const currentTasks = await StorageService.loadTasks();
+        const updatedTasks = currentTasks.map((t) =>
+          t.id === task.id ? task : t
+        );
+        await StorageService.saveTasks(updatedTasks);
 
-      const pendingChanges = await StorageService.loadPendingChanges();
-      await StorageService.savePendingChanges([
-        ...pendingChanges,
-        { type: "UPDATE", task },
-      ]);
+        const pendingChanges = await StorageService.loadPendingChanges();
+        await StorageService.savePendingChanges([
+          ...pendingChanges,
+          { type: "UPDATE", task },
+        ]);
 
-      dispatch(updateTask(task));
+        dispatch(updateTask(task));
+      } else {
+        throw error;
+      }
     }
   };
 
@@ -172,7 +180,6 @@ export const updateTaskAsync =
 export const deleteTaskAsync =
   (taskId: string) => async (dispatch: AppDispatch) => {
     try {
-      // Try to delete from API
       await axios.delete(`${API_URL}/tasks/${taskId}`, {
         headers: {
           Authorization: `Bearer ${await SecureStore.getItemAsync("token")}`,
@@ -184,18 +191,23 @@ export const deleteTaskAsync =
       const updatedTasks = currentTasks.filter((t) => t.id !== taskId);
       await StorageService.saveTasks(updatedTasks);
     } catch (error) {
-      // If offline, delete locally and add to pending changes
-      const currentTasks = await StorageService.loadTasks();
-      const updatedTasks = currentTasks.filter((t) => t.id !== taskId);
-      await StorageService.saveTasks(updatedTasks);
+      console.log("Error in deleteTaskAsync:", error);
+      // If offline or network error, delete locally and add to pending changes
+      if (axios.isAxiosError(error) && !error.response) {
+        const currentTasks = await StorageService.loadTasks();
+        const updatedTasks = currentTasks.filter((t) => t.id !== taskId);
+        await StorageService.saveTasks(updatedTasks);
 
-      const pendingChanges = await StorageService.loadPendingChanges();
-      await StorageService.savePendingChanges([
-        ...pendingChanges,
-        { type: "DELETE", taskId },
-      ]);
+        const pendingChanges = await StorageService.loadPendingChanges();
+        await StorageService.savePendingChanges([
+          ...pendingChanges,
+          { type: "DELETE", taskId },
+        ]);
 
-      dispatch(deleteTask(taskId));
+        dispatch(deleteTask(taskId));
+      } else {
+        throw error;
+      }
     }
   };
 

@@ -14,6 +14,6 @@ export interface Task {
     name: string;
     color: string;
   };
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }

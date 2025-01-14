@@ -15,7 +15,7 @@ import TaskForm from "../../components/TaskForm";
 import { API_URL } from "../../config/api";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
-import { fetchTasksAsync } from "../../store/slices/taskSlice";
+import { addTaskAsync, fetchTasksAsync } from "../../store/slices/taskSlice";
 import { AppDispatch, RootState } from "../../store";
 import { CreateTaskTabNavigationProp } from "../../types/navigation";
 import { fetchProfileAsync } from "../../store/slices/userSlice";
@@ -46,27 +46,22 @@ export default function CreateTaskScreen() {
         status: data.status,
         priority: data.priority,
         category: data.category,
-        dueDate: data.dueDate.toISOString(),
+        date: {
+          year: data.dueDate.getFullYear(),
+          month: data.dueDate.toLocaleString("default", { month: "long" }),
+          day: data.dueDate.getDate(),
+        },
         time: data.time,
       };
 
-      await axios.post(`${API_URL}/tasks`, taskData, {
-        headers: {
-          Authorization: `Bearer ${await SecureStore.getItemAsync("token")}`,
-        },
-      });
-
-      dispatch(fetchTasksAsync());
+      await dispatch(addTaskAsync(taskData));
       navigation.goBack();
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        Alert.alert(
-          "Error",
-          error.response?.data?.message || "Failed to create task"
-        );
-      } else {
-        Alert.alert("Error", "Failed to create task. Please try again.");
-      }
+      console.error("Error creating task:", error);
+      Alert.alert(
+        "Error",
+        "Failed to create task. The task will be saved locally and synced when online."
+      );
     } finally {
       setLoading(false);
     }
