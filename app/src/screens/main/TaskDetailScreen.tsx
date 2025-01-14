@@ -64,9 +64,11 @@ export default function TaskDetailScreen() {
               status: task.status,
               priority: task.priority,
               category: task.category.name,
-              date: new Date(
-                `${task.date.year}-${task.date.month}-${task.date.day}`
-              ),
+              dueDate: `${task.date.year}-${String(task.date.month).padStart(
+                2,
+                "0"
+              )}-${String(task.date.day).padStart(2, "0")}`,
+              time: task.time,
             })
           }
         >

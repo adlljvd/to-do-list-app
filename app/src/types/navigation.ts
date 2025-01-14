@@ -7,11 +7,20 @@ export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   welcome: undefined;
-  Home: undefined;
+  MainTabs: undefined;
   TaskList: undefined;
   TaskDetail: { task: Task };
   CreateTask: undefined;
-  EditTask: undefined;
+  EditTask: {
+    taskId: string;
+    title: string;
+    description: string;
+    status: string;
+    priority: string;
+    category: string;
+    dueDate: string;
+    time: string;
+  };
 };
 
 export type MainTabParamList = {

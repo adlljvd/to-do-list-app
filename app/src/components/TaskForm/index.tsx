@@ -24,6 +24,7 @@ import { Category } from "../../types/profile";
 
 export default function TaskForm({
   mode,
+  initialData,
   onSubmit,
   disabled,
   profile,
@@ -44,42 +45,48 @@ export default function TaskForm({
     };
   };
 
-  const resetForm = () => {
-    setTitle("");
-    setDescription("");
-    setDueDate(new Date());
-    const { hours, minutes, ampm } = getCurrentTime();
-    setHours(hours);
-    setMinutes(minutes);
-    setAmPm(ampm as "AM" | "PM");
-    setSelectedPriority("low");
-    setSelectedStatus("pending");
-    setSelectedCategory("");
+  const parseInitialTime = () => {
+    if (initialData?.time) {
+      const [time, period] = initialData.time.split(" ");
+      const [hrs, mins] = time.split(":");
+      return {
+        hours: hrs,
+        minutes: mins,
+        ampm: period as AMPM,
+      };
+    }
+    return getCurrentTime();
   };
 
-  useEffect(() => {
-    resetForm();
-  }, []);
+  const initialTime = parseInitialTime();
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [dueDate, setDueDate] = useState(new Date());
+  const [title, setTitle] = useState(initialData?.title || "");
+  const [description, setDescription] = useState(
+    initialData?.description || ""
+  );
+  const [dueDate, setDueDate] = useState(initialData?.dueDate || new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimeModal, setShowTimeModal] = useState(false);
-  const [hours, setHours] = useState("12");
-  const [minutes, setMinutes] = useState("00");
-  const [ampm, setAmPm] = useState<AMPM>("AM");
-  const [selectedPriority, setSelectedPriority] = useState<TaskPriority>("low");
-  const [selectedStatus, setSelectedStatus] = useState<TaskStatus>("pending");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [hours, setHours] = useState(initialTime.hours);
+  const [minutes, setMinutes] = useState(initialTime.minutes);
+  const [ampm, setAmPm] = useState<AMPM>(initialTime.ampm);
+  const [selectedPriority, setSelectedPriority] = useState<TaskPriority>(
+    initialData?.priority || "low"
+  );
+  const [selectedStatus, setSelectedStatus] = useState<TaskStatus>(
+    initialData?.status || "pending"
+  );
+  const [selectedCategory, setSelectedCategory] = useState(
+    initialData?.category || ""
+  );
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategory, setNewCategory] = useState("");
 
   useEffect(() => {
-    if (profile?.categories && profile.categories.length > 0) {
+    if (!initialData && profile?.categories && profile.categories.length > 0) {
       setSelectedCategory(profile.categories[0].name);
     }
-  }, [profile]);
+  }, [profile, initialData]);
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
     if (selectedDate) {
@@ -138,7 +145,6 @@ export default function TaskForm({
     };
     console.log("Submitting form data:", formData);
     onSubmit(formData);
-    resetForm();
   };
 
   return (
@@ -342,6 +348,8 @@ export default function TaskForm({
               style={{ width: Platform.OS === "ios" ? "100%" : "auto" }}
               textColor="#1A1A1A"
               themeVariant="light"
+              minimumDate={new Date()}
+              maximumDate={new Date(2050, 12, 31)}
             />
           </View>
           <View style={styles.modalButtons}>
@@ -507,7 +515,7 @@ export default function TaskForm({
         </KeyboardAvoidingView>
       </Modal>
 
-      {mode === "create" && (
+      {(mode === "create" || mode === "edit") && (
         <TouchableOpacity
           style={[styles.submitButton, disabled && styles.submitButtonDisabled]}
           onPress={handleSubmit}
@@ -519,7 +527,9 @@ export default function TaskForm({
               disabled && styles.submitButtonTextDisabled,
             ]}
           >
-            {disabled ? "Creating..." : submitLabel}
+            {disabled
+              ? `${mode === "create" ? "Creating" : "Saving"}...`
+              : submitLabel}
           </Text>
         </TouchableOpacity>
       )}

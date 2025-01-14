@@ -23,6 +23,7 @@ export interface TaskFormProps {
   onCancel?: () => void;
   disabled?: boolean;
   profile?: any;
+  initialData?: TaskFormData;
   onAddCategory?: (category: Category) => Promise<any>;
   onDeleteCategory?: (categoryId: string) => Promise<void>;
   submitLabel?: string;
