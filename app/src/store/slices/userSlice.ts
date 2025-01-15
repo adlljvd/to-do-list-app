@@ -17,6 +17,7 @@ const initialState: UserState = {
     name: "",
     email: "",
     role: "",
+    categories: [],
   },
   loading: false,
   error: "",

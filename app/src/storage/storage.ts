@@ -28,12 +28,10 @@ export const StorageService = {
       const tasksJson = await AsyncStorage.getItem(TASKS_STORAGE_KEY);
       const tasks = tasksJson ? JSON.parse(tasksJson) : [];
 
-      // Ambil pending changes
       const pendingChanges = await StorageService.loadPendingChanges();
       const pendingTasks = pendingChanges
         .filter((change) => change.type === "ADD")
         .map((change) => {
-          // Pastikan dueDate adalah Date object
           const dueDate = change.task.dueDate
             ? new Date(change.task.dueDate)
             : new Date();

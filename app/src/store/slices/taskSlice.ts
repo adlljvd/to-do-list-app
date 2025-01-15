@@ -115,7 +115,6 @@ export const fetchTasksAsync = () => async (dispatch: AppDispatch) => {
 export const addTaskAsync =
   (taskData: RawTaskData) => async (dispatch: AppDispatch) => {
     try {
-      // Transform data untuk API - pastikan format sesuai dengan yang diharapkan backend
       const apiData = {
         title: taskData.title,
         description: taskData.description,
@@ -242,14 +241,12 @@ export const updateTaskAsync =
 export const deleteTaskAsync =
   (taskId: string) => async (dispatch: AppDispatch) => {
     try {
-      // Try to delete from API
       await axios.delete(`${API_URL}/tasks/${taskId}`, {
         headers: {
           Authorization: `Bearer ${await SecureStore.getItemAsync("token")}`,
         },
       });
       dispatch(deleteTask(taskId));
-      // Update AsyncStorage
       const currentTasks = await StorageService.loadTasks();
       const updatedTasks = currentTasks.filter((t) => t.id !== taskId);
       await StorageService.saveTasks(updatedTasks);
@@ -327,7 +324,7 @@ export const syncPendingChangesAsync = () => async (dispatch: AppDispatch) => {
           const apiData = {
             title: change.task.title,
             description: change.task.description,
-            dueDate: change.task.dueDate, // dueDate sudah dalam format string dari PendingChangeAdd
+            dueDate: change.task.dueDate, // dueDate udh dalam format string dari PendingChangeAdd
             time: change.task.time,
             status: change.task.status,
             priority: change.task.priority,

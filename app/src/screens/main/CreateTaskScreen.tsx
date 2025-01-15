@@ -61,6 +61,7 @@ export default function CreateTaskScreen() {
       };
 
       await dispatch(addTaskAsync(taskData));
+      await dispatch(fetchTasksAsync());
       navigation.goBack();
     } catch (error) {
       console.error("Error creating task:", error);
@@ -128,27 +129,24 @@ export default function CreateTaskScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
-          >
-            <Ionicons name="close" size={24} color="#1A1A1A" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Create Task</Text>
-        </View>
-
-        <TaskForm
-          mode="create"
-          onSubmit={handleCreateTask}
-          onCancel={() => navigation.goBack()}
-          disabled={loading}
-          profile={profile}
-          onAddCategory={handleAddCategory}
-          onDeleteCategory={handleDeleteCategory}
-        />
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="chevron-back" size={24} color="#1A1A1A" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Create Task</Text>
       </View>
+      <TaskForm
+        key={Date.now()}
+        mode="create"
+        onSubmit={handleCreateTask}
+        disabled={loading}
+        profile={profile}
+        onAddCategory={handleAddCategory}
+        onDeleteCategory={handleDeleteCategory}
+      />
     </SafeAreaView>
   );
 }

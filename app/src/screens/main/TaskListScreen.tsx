@@ -33,7 +33,9 @@ const tabs = [
 
 const EmptyState = () => (
   <View style={styles.emptyContainer}>
-    <Ionicons name="document-text-outline" size={64} color="#CCCCCC" />
+    <View style={styles.emptyIconContainer}>
+      <Ionicons name="list-outline" size={64} color="#CCCCCC" />
+    </View>
     <Text style={styles.emptyText}>Click button + to create a new task</Text>
   </View>
 );
@@ -210,7 +212,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 32,
+    marginTop: -100, // Geser ke atas
+  },
+  emptyIconContainer: {
+    justifyContent: "center",
+    alignItems: "center",
   },
   emptyText: {
     marginTop: 16,
