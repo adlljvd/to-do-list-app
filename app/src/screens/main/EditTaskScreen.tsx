@@ -189,10 +189,6 @@ export default function EditTaskScreen() {
     category: params.category,
   };
 
-  // Debug log
-  console.log("Params received:", params);
-  console.log("Initial data:", initialData);
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.container}>

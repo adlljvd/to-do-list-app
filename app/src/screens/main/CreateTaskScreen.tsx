@@ -19,6 +19,7 @@ import { addTaskAsync, fetchTasksAsync } from "../../store/slices/taskSlice";
 import { AppDispatch, RootState } from "../../store";
 import { CreateTaskTabNavigationProp } from "../../types/navigation";
 import { fetchProfileAsync } from "../../store/slices/userSlice";
+import { RawTaskData } from "../../types/task";
 
 export default function CreateTaskScreen() {
   const navigation = useNavigation<CreateTaskTabNavigationProp>();
@@ -30,6 +31,10 @@ export default function CreateTaskScreen() {
     dispatch(fetchProfileAsync());
   }, []);
 
+  useEffect(() => {
+    console.log(profile, "profile");
+  }, [profile]);
+
   const handleCreateTask = async (data: TaskFormData) => {
     if (!data.title.trim()) {
       Alert.alert("Error", "Title is required");
@@ -38,20 +43,21 @@ export default function CreateTaskScreen() {
 
     try {
       setLoading(true);
-      console.log("Creating task with data:", data); // Debug log
 
-      const taskData = {
+      const taskData: RawTaskData = {
         title: data.title,
         description: data.description,
+        dueDate: data.dueDate,
+        time: data.time,
         status: data.status,
         priority: data.priority,
-        category: data.category,
-        date: {
-          year: data.dueDate.getFullYear(),
-          month: data.dueDate.toLocaleString("default", { month: "long" }),
-          day: data.dueDate.getDate(),
-        },
-        time: data.time,
+        category:
+          typeof data.category === "string"
+            ? {
+                name: data.category,
+                color: "#" + Math.floor(Math.random() * 16777215).toString(16),
+              }
+            : data.category,
       };
 
       await dispatch(addTaskAsync(taskData));

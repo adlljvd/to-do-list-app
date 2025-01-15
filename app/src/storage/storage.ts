@@ -1,22 +1,20 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Task } from "../types/task";
-import {
-  addTaskAsync,
-  deleteTaskAsync,
-  updateTaskAsync,
-} from "../store/slices/taskSlice";
-import { AppDispatch } from "../store";
+import { RawTaskData, Task } from "../types/task";
+import { formatTaskDate } from "../utils/dateFormatter";
 
 export type PendingChange =
-  | { type: "ADD"; task: Task }
+  | { type: "ADD"; task: RawTaskData }
   | { type: "UPDATE"; task: Task }
   | { type: "DELETE"; taskId: string };
 
 const TASKS_STORAGE_KEY = "@todo_tasks";
 const PENDING_CHANGES_KEY = "@todo_pending_changes";
 
+const generateUniqueId = () => {
+  return Date.now().toString() + "-" + Math.random().toString(36).substr(2, 9);
+};
+
 export const StorageService = {
-  // Save tasks to AsyncStorage
   saveTasks: async (tasks: Task[]) => {
     try {
       await AsyncStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
@@ -25,38 +23,82 @@ export const StorageService = {
     }
   },
 
-  // Load tasks from AsyncStorage
   loadTasks: async (): Promise<Task[]> => {
     try {
       const tasksJson = await AsyncStorage.getItem(TASKS_STORAGE_KEY);
-      return tasksJson ? JSON.parse(tasksJson) : [];
+      const tasks = tasksJson ? JSON.parse(tasksJson) : [];
+
+      // Ambil pending changes
+      const pendingChanges = await StorageService.loadPendingChanges();
+      const pendingTasks = pendingChanges
+        .filter((change) => change.type === "ADD")
+        .map((change) => {
+          // Pastikan dueDate adalah Date object
+          const dueDate = change.task.dueDate
+            ? new Date(change.task.dueDate)
+            : new Date();
+
+          return {
+            id: generateUniqueId(),
+            title: change.task.title,
+            description: change.task.description,
+            time: change.task.time,
+            date: formatTaskDate(dueDate),
+            status: change.task.status,
+            priority: change.task.priority,
+            category: change.task.category,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+        });
+
+      return [...tasks, ...pendingTasks];
     } catch (error) {
       console.error("Error loading tasks:", error);
       return [];
     }
   },
 
-  // Save pending changes when offline
   savePendingChanges: async (changes: PendingChange[]) => {
     try {
-      await AsyncStorage.setItem(PENDING_CHANGES_KEY, JSON.stringify(changes));
+      // Log before saving
+      console.log("Saving pending changes:", JSON.stringify(changes, null, 2));
+
+      // Ensure dueDate is in ISO string format for ADD changes
+      const formattedChanges = changes.map((change) => {
+        if (change.type === "ADD" && change.task.dueDate instanceof Date) {
+          return {
+            ...change,
+            task: {
+              ...change.task,
+              dueDate: change.task.dueDate.toISOString(),
+            },
+          };
+        }
+        return change;
+      });
+
+      await AsyncStorage.setItem(
+        PENDING_CHANGES_KEY,
+        JSON.stringify(formattedChanges)
+      );
     } catch (error) {
       console.error("Error saving pending changes:", error);
     }
   },
 
-  // Load pending changes
-  loadPendingChanges: async () => {
+  loadPendingChanges: async (): Promise<PendingChange[]> => {
     try {
       const changesJson = await AsyncStorage.getItem(PENDING_CHANGES_KEY);
-      return changesJson ? JSON.parse(changesJson) : [];
+      const changes = changesJson ? JSON.parse(changesJson) : [];
+      console.log("Loaded pending changes:", JSON.stringify(changes, null, 2));
+      return changes;
     } catch (error) {
       console.error("Error loading pending changes:", error);
       return [];
     }
   },
 
-  // Clear pending changes after sync
   clearPendingChanges: async () => {
     try {
       await AsyncStorage.removeItem(PENDING_CHANGES_KEY);
@@ -64,28 +106,4 @@ export const StorageService = {
       console.error("Error clearing pending changes:", error);
     }
   },
-};
-
-export const syncPendingChangesAsync = () => async (dispatch: AppDispatch) => {
-  try {
-    const pendingChanges = await StorageService.loadPendingChanges();
-
-    for (const change of pendingChanges) {
-      switch (change.type) {
-        case "ADD":
-          await dispatch(addTaskAsync(change.task));
-          break;
-        case "UPDATE":
-          await dispatch(updateTaskAsync(change.task));
-          break;
-        case "DELETE":
-          await dispatch(deleteTaskAsync(change.taskId));
-          break;
-      }
-    }
-
-    await StorageService.clearPendingChanges();
-  } catch (error) {
-    console.error("Error syncing pending changes:", error);
-  }
 };

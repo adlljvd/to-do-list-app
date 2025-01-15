@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import NetInfo from "@react-native-community/netinfo";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../store";
-import { syncPendingChangesAsync } from "../../storage/storage";
+import { syncPendingChangesAsync } from "../../store/slices/taskSlice";
 
 export function NetworkMonitor() {
   const dispatch = useDispatch<AppDispatch>();
